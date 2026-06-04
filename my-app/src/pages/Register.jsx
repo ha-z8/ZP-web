@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../supabase';
 import Layout from '../components/Layout';
-import { showSuccess, showError } from '../utils/alerts'; // 👈 استيراد الإشعارات الفاخرة
+import { showSuccess, showError } from '../utils/alerts';
 
 export default function Register() {
   const navigate = useNavigate();
@@ -24,62 +24,40 @@ export default function Register() {
     e.preventDefault();
 
     if (formData.password !== formData.confirmPassword) {
-      showError('عذراً، كلمات المرور غير متطابقة!'); // 👈 إشعار خطأ
+      showError('عذراً، كلمات المرور غير متطابقة!');
       return;
     }
 
     const usernameRegex = /^[a-zA-Z0-9_]{3,15}$/;
     if (!usernameRegex.test(formData.username)) {
-      showError('اسم المستخدم يجب أن يكون بالإنجليزية، من 3 لـ 15 حرفاً، وبدون مسافات.'); // 👈 إشعار خطأ
+      showError('اسم المستخدم يجب أن يكون بالإنجليزية، من 3 لـ 15 حرفاً، وبدون مسافات.');
       return;
     }
 
     setLoading(true);
 
     try {
-      // التحقق من عدم تكرار اليوزر
-      const { data: existingUser } = await supabase
-        .from('profiles')
-        .select('username')
-        .eq('username', formData.username.toLowerCase())
-        .maybeSingle();
-
-      if (existingUser) {
-        showError('اسم المستخدم هذا محجوز مسبقاً، الرجاء اختيار اسم آخر.'); // 👈 إشعار خطأ
-        setLoading(false);
-        return;
-      }
-
-      // إنشاء الحساب في الـ Auth
+      // إرسال البيانات إلى Auth وتمرير بيانات البروفايل في الـ metadata
       const { data: authData, error: authError } = await supabase.auth.signUp({
         email: formData.email,
         password: formData.password,
+        options: {
+          data: {
+            username: formData.username.toLowerCase(),
+            full_name: formData.fullName,
+            phone: formData.phone
+          }
+        }
       });
 
       if (authError) throw authError;
 
-      if (authData?.user) {
-        // إدراج البيانات كاملة في الجدول الجديد
-        const { error: profileError } = await supabase
-          .from('profiles')
-          .insert([
-            {
-              id: authData.user.id,
-              username: formData.username.toLowerCase(),
-              full_name: formData.fullName,
-              email: formData.email,
-              phone: formData.phone
-            }
-          ]);
-
-        if (profileError) throw profileError;
-
-        showSuccess('تهانينا! تم إنشاء حسابك بنجاح ✨'); // 👈 إشعار نجاح
-        navigate('/');
-      }
+      showSuccess('تهانينا! تم إنشاء حسابك بنجاح ✨');
+      navigate('/');
+      
     } catch (err) {
       console.error(err);
-      showError(err.message || 'حدث خطأ غير متوقع أثناء إنشاء الحساب.'); // 👈 إشعار خطأ
+      showError(err.message || 'حدث خطأ غير متوقع أثناء إنشاء الحساب.');
     } finally {
       setLoading(false);
     }
