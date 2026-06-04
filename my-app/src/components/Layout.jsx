@@ -53,6 +53,10 @@ export default function Layout({ children }) {
             <img src={zLogo} alt="Logo" className="w-12 h-12 object-contain filter drop-shadow-[0_0_8px_rgba(245,158,11,0.3)]" />
           </div>
 
+          <button className="md:hidden p-2 text-slate-400" onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}>
+            {isMobileMenuOpen ? <span className="text-2xl">✕</span> : <span className="text-2xl">☰</span>}
+          </button>
+
           <nav className="hidden md:flex items-center gap-8">
             <button onClick={() => navigate('/')} className={`text-sm font-medium transition-colors ${location.pathname === '/' ? 'text-amber-400 font-bold' : 'text-slate-400 hover:text-white'}`}>الرئيسية</button>
             <button onClick={scrollToContact} className="text-sm text-slate-400 hover:text-white transition-colors">تواصل معنا</button>
@@ -64,15 +68,15 @@ export default function Layout({ children }) {
               <div className="relative">
                 <button onClick={() => setIsProfileMenuOpen(!isProfileMenuOpen)} className="flex items-center gap-2 bg-slate-900 border border-slate-800 px-4 py-2 rounded-xl text-xs font-semibold text-slate-200 transition-all hover:border-amber-500/40"><span>حسابي</span></button>
                 {isProfileMenuOpen && (
-                  <div className="absolute left-0 mt-2 w-56 bg-slate-900 border border-slate-800 rounded-xl shadow-2xl py-1.5 z-50 text-right animate-fadeIn">
+                  <div className="absolute left-0 mt-2 w-56 bg-slate-900 border border-slate-800 rounded-xl shadow-2xl py-1.5 z-50 text-right">
                     <div className="px-4 py-2 border-b border-slate-800/60 mb-1">
                       <p className="text-[10px] text-slate-500">مسجل كـ</p>
                       <p className="text-xs font-medium text-slate-300 truncate">{user.email}</p>
                     </div>
-                    <button onClick={() => { setIsProfileMenuOpen(false); navigate('/my-account'); }} className="w-full text-right px-4 py-2 text-xs text-slate-300 hover:bg-slate-950 hover:text-amber-400 transition-colors">📦 متابعة طلباتي ورسائلي</button>
-                    <button onClick={() => { setIsProfileMenuOpen(false); navigate('/profile'); }} className="w-full text-right px-4 py-2 text-xs text-slate-300 hover:bg-slate-950 hover:text-amber-400 transition-colors">⚙️ إعدادات حسابي</button>
-                    <button onClick={() => { setIsProfileMenuOpen(false); navigate('/dashboard'); }} className="w-full text-right px-4 py-2 text-xs text-purple-400 hover:bg-slate-950 border-t border-slate-800 mt-1 transition-colors">🛡️ لوحة التحكم الإدارية</button>
-                    <button onClick={handleLogout} className="w-full text-right px-4 py-2 text-xs text-red-400 hover:bg-slate-950 border-t border-slate-800 mt-1 transition-colors">تسجيل الخروج</button>
+                    <button onClick={() => { setIsProfileMenuOpen(false); navigate('/my-account'); }} className="w-full text-right px-4 py-2 text-xs text-slate-300 hover:bg-slate-950 hover:text-amber-400">📦 متابعة طلباتي ورسائلي</button>
+                    <button onClick={() => { setIsProfileMenuOpen(false); navigate('/profile'); }} className="w-full text-right px-4 py-2 text-xs text-slate-300 hover:bg-slate-950 hover:text-amber-400">⚙️ إعدادات حسابي</button>
+                    <button onClick={() => { setIsProfileMenuOpen(false); navigate('/dashboard'); }} className="w-full text-right px-4 py-2 text-xs text-purple-400 hover:bg-slate-950 border-t border-slate-800 mt-1">🛡️ لوحة التحكم الإدارية</button>
+                    <button onClick={handleLogout} className="w-full text-right px-4 py-2 text-xs text-red-400 hover:bg-slate-950 border-t border-slate-800 mt-1">تسجيل الخروج</button>
                   </div>
                 )}
               </div>
@@ -81,6 +85,24 @@ export default function Layout({ children }) {
             )}
           </div>
         </div>
+
+        {isMobileMenuOpen && (
+          <div className="md:hidden bg-slate-900 border-t border-slate-800 p-4 space-y-3">
+            <button onClick={() => {navigate('/'); setIsMobileMenuOpen(false)}} className="w-full text-right py-2 text-slate-300">الرئيسية</button>
+            <button onClick={scrollToContact} className="w-full text-right py-2 text-slate-300">تواصل معنا</button>
+            <button onClick={() => {navigate('/booking'); setIsMobileMenuOpen(false)}} className="w-full text-right py-2 text-amber-400 font-bold">احجز موعدك الآن</button>
+            {user ? (
+              <div className="border-t border-slate-800 pt-3 mt-3 space-y-2">
+                <button onClick={() => {navigate('/my-account'); setIsMobileMenuOpen(false)}} className="w-full text-right py-2 text-slate-300">📦 طلباتي ورسائلي</button>
+                <button onClick={() => {navigate('/profile'); setIsMobileMenuOpen(false)}} className="w-full text-right py-2 text-slate-300">⚙️ إعدادات حسابي</button>
+                <button onClick={() => {navigate('/dashboard'); setIsMobileMenuOpen(false)}} className="w-full text-right py-2 text-purple-400">🛡️ لوحة التحكم</button>
+                <button onClick={handleLogout} className="w-full text-right py-2 text-red-400">تسجيل الخروج</button>
+              </div>
+            ) : (
+              <button onClick={() => {navigate('/login'); setIsMobileMenuOpen(false)}} className="w-full text-right py-2 text-amber-400 font-bold">تسجيل الدخول</button>
+            )}
+          </div>
+        )}
       </header>
 
       <main className="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -108,9 +130,9 @@ export default function Layout({ children }) {
             <div>
               <h4 className="text-slate-200 font-bold text-sm mb-4">حسابات التواصل الاجتماعي</h4>
               <div className="flex gap-4 justify-start">
-                <a href="https://www.instagram.com/zobaidh_photographer/" className="w-10 h-10 rounded-lg bg-slate-900 border border-slate-800 flex items-center justify-center hover:border-purple-500 transition-all"><img src="https://static.xx.fbcdn.net/assets/?set=help_center_about_page_illustrations&name=desktop-instagram-shield&density=1" className="w-6 h-6" /></a>
-                <a href="https://www.snapchat.com/@zobaidh_photo" className="w-10 h-10 rounded-lg bg-slate-900 border border-slate-800 flex items-center justify-center hover:border-yellow-400 transition-all"><img src="https://cdn.creazilla.com/icons/7912114/snapchat-logo-icon-size_512.png" className="w-6 h-6" /></a>
-                <a href="https://api.whatsapp.com/send?phone=966554491860" className="w-10 h-10 rounded-lg bg-slate-900 border border-slate-800 flex items-center justify-center hover:border-emerald-400 transition-all"><img src="https://upload.wikimedia.org/wikipedia/commons/c/cc/WhatsApp_Logo.svg" className="w-6 h-6" /></a>
+                <a href="https://www.instagram.com/zobaidh_photographer/" className="w-10 h-10 rounded-lg bg-slate-900 border border-slate-800 flex items-center justify-center hover:border-purple-500 transition-all">📷</a>
+                <a href="https://www.snapchat.com/@zobaidh_photo" className="w-10 h-10 rounded-lg bg-slate-900 border border-slate-800 flex items-center justify-center hover:border-yellow-400 transition-all">👻</a>
+                <a href="https://api.whatsapp.com/send?phone=966554491860" className="w-10 h-10 rounded-lg bg-slate-900 border border-slate-800 flex items-center justify-center hover:border-emerald-400 transition-all">💬</a>
               </div>
             </div>
           </div>

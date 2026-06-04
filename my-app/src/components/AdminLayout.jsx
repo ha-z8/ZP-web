@@ -8,7 +8,6 @@ export default function AdminLayout({ children }) {
   const location = useLocation();
   const [adminEmail, setAdminEmail] = useState('');
 
-  // التحقق هل الصفحة الحالية هي الداشبورد الرئيسية
   const isDashboard = location.pathname === '/dashboard';
 
   useEffect(() => {
@@ -23,54 +22,54 @@ export default function AdminLayout({ children }) {
   };
 
   return (
-    <div dir="rtl" className="min-h-screen bg-slate-950 text-slate-100 font-sans flex flex-col justify-between overflow-x-hidden">
+    <div dir="rtl" className="min-h-screen bg-slate-950 text-slate-100 font-sans flex flex-col overflow-x-hidden">
       
       <header className="sticky top-0 z-50 w-full border-b border-amber-500/20 bg-slate-900/90 backdrop-blur-md">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
+        <div className="max-w-7xl mx-auto px-4 h-auto py-3 flex flex-wrap items-center justify-between gap-4">
           
-          <div className="flex items-center gap-1">
-            <img src={zLogo} alt="Logo" className="w-12 h-12 object-contain filter drop-shadow-[0_0_8px_rgba(245,158,11,0.3)]" />
-            <div className="flex flex-col text-right">
-              <span className="text-base font-black tracking-wider text-amber-400">zobaidhphoto</span>
+          {/* الشعار - تم تصغيره للشاشات الصغيرة */}
+          <div className="flex items-center gap-2">
+            <img src={zLogo} alt="Logo" className="w-10 h-10 object-contain" />
+            <div className="hidden sm:flex flex-col text-right">
+              <span className="text-sm font-black tracking-wider text-amber-400">zobaidhphoto</span>
               <span className="text-[10px] text-slate-400 tracking-widest -mt-0.5 font-bold">بوابة الإدارة والمشرفين</span>
             </div>
           </div>
 
-          <nav className="hidden md:flex items-center gap-6">
-            <div className="text-xs bg-slate-950 border border-slate-800 px-4 py-2 rounded-xl text-slate-400">
-              مرحباً بك: <span className="text-amber-400 font-medium font-mono">{adminEmail}</span>
-            </div>
-          </nav>
+          {/* البريد يظهر فقط في الشاشات المتوسطة والكبيرة لمنع التداخل */}
+          <div className="hidden md:flex text-[10px] bg-slate-950 border border-slate-800 px-3 py-1.5 rounded-lg text-slate-400 truncate max-w-[200px]">
+            مرحباً: <span className="text-amber-400 mx-1">{adminEmail}</span>
+          </div>
 
-          <div className="flex items-center gap-3">
-            {/* التبديل الذكي بين عرض الموقع والعودة للوحة التحكم */}
+          {/* الأزرار - تم استخدام gap متناسب */}
+          <div className="flex items-center gap-2 flex-wrap">
             {isDashboard ? (
               <button
                 onClick={() => navigate('/')}
-                className="bg-slate-950 hover:bg-slate-800 border border-slate-800 text-slate-300 text-xs font-bold px-4 py-2.5 rounded-xl transition-all"
+                className="bg-slate-950 hover:bg-slate-800 border border-slate-800 text-slate-300 text-[10px] font-bold px-3 py-2 rounded-lg transition-all"
               >
-                👁️ عرض الموقع العام
+                👁️ عرض الموقع
               </button>
             ) : (
               <button
                 onClick={() => navigate('/dashboard')}
-                className="bg-amber-500/10 hover:bg-amber-500 border border-amber-500/30 text-amber-400 hover:text-slate-950 text-xs font-bold px-4 py-2.5 rounded-xl transition-all"
+                className="bg-amber-500/10 hover:bg-amber-500 border border-amber-500/30 text-amber-400 hover:text-slate-950 text-[10px] font-bold px-3 py-2 rounded-lg transition-all"
               >
-                🔙 العودة للوحة التحكم
+                🔙 لوحة التحكم
               </button>
             )}
 
             <button
               onClick={handleLogout}
-              className="bg-red-500/10 hover:bg-red-500 border border-red-500/30 hover:border-transparent text-red-400 hover:text-white text-xs font-bold px-4 py-2.5 rounded-xl transition-all duration-300"
+              className="bg-red-500/10 hover:bg-red-500 border border-red-500/30 text-red-400 hover:text-white text-[10px] font-bold px-3 py-2 rounded-lg transition-all"
             >
-              تسجيل الخروج 🚪
+              تسجيل خروج 🚪
             </button>
           </div>
         </div>
       </header>
 
-      <main className="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-10">
+      <main className="flex-grow max-w-7xl w-full mx-auto px-4 py-6">
         {children}
       </main>
 
