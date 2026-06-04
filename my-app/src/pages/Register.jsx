@@ -37,8 +37,8 @@ export default function Register() {
     setLoading(true);
 
     try {
-      // إرسال البيانات إلى Auth وتمرير بيانات البروفايل في الـ metadata
-      const { data: authData, error: authError } = await supabase.auth.signUp({
+      // التسجيل يعتمد على الـ Trigger في Supabase لإنشاء البروفايل تلقائياً
+      const { error: authError } = await supabase.auth.signUp({
         email: formData.email,
         password: formData.password,
         options: {
@@ -56,8 +56,8 @@ export default function Register() {
       navigate('/');
       
     } catch (err) {
-      console.error(err);
-      showError(err.message || 'حدث خطأ غير متوقع أثناء إنشاء الحساب.');
+      console.error("خطأ أثناء التسجيل:", err);
+      showError(err.message || 'حدث خطأ أثناء إنشاء الحساب.');
     } finally {
       setLoading(false);
     }
