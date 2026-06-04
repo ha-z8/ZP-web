@@ -25,13 +25,16 @@ export default function Dashboard() {
   useEffect(() => { fetchData(); }, []);
 
   // إضافة /dashboard/ قبل المسار كما طلبت
-  const navItems = [
-    { title: 'سجل الحجوزات', path: '/dashboard/bookings', icon: '📅', color: 'border-amber-500/30 text-amber-400' },
-    { title: 'صندوق الرسائل', path: '/dashboard/messages', icon: '✉️', color: 'border-blue-500/30 text-blue-400' },
-    { title: 'إدارة المستخدمين', path: '/dashboard/users', icon: '👥', color: 'border-purple-500/30 text-purple-400' },
-    { title: 'باقات التصوير', path: '/dashboard/packages', icon: '📦', color: 'border-emerald-500/30 text-emerald-400' },
-    { title: 'معرض الصور', path: '/dashboard/album', icon: '🖼️', color: 'border-indigo-500/30 text-indigo-400' }
-  ];
+  // داخل ملف Dashboard.jsx، قم بتحديث مصفوفة navItems كالتالي:
+
+const navItems = [
+  { title: 'سجل الحجوزات', path: '/dashboard/bookings', icon: '📝', color: 'border-amber-500/30 text-amber-400' },
+  { title: 'تقويم الحجوزات', path: '/dashboard/calendar', icon: '🗓️', color: 'border-emerald-500/30 text-emerald-400' },
+  { title: 'صندوق الرسائل', path: '/dashboard/messages', icon: '📥', color: 'border-cyan-500/30 text-cyan-400' },
+  { title: 'إدارة المستخدمين', path: '/dashboard/users', icon: '👤', color: 'border-rose-500/30 text-rose-400' },
+  { title: 'باقات التصوير', path: '/dashboard/packages', icon: '✨', color: 'border-violet-500/30 text-violet-400' },
+  { title: 'معرض الصور', path: '/dashboard/album', icon: '📷', color: 'border-orange-500/30 text-orange-400' }
+];
 
   return (
     <AdminLayout>
