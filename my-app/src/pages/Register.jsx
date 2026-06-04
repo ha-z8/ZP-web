@@ -37,27 +37,40 @@ export default function Register() {
     setLoading(true);
 
     try {
-      // التسجيل يعتمد على الـ Trigger في Supabase لإنشاء البروفايل تلقائياً
-      const { error: authError } = await supabase.auth.signUp({
+      // 1. تسجيل المستخدم في نظام Auth الخاص بـ Supabase
+      const { data: authData, error: authError } = await supabase.auth.signUp({
         email: formData.email,
         password: formData.password,
-        options: {
-          data: {
-            username: formData.username.toLowerCase(),
-            full_name: formData.fullName,
-            phone: formData.phone
-          }
-        }
       });
 
       if (authError) throw authError;
+
+      // 2. إذا تم التسجيل بنجاح، نقوم بإضافة البيانات لجدول profiles يدوياً
+      if (authData.user) {
+        const { error: profileError } = await supabase
+          .from('profiles')
+          .insert([
+            {
+              id: authData.user.id,
+              username: formData.username.toLowerCase(),
+              full_name: formData.fullName,
+              email: formData.email,
+              phone: formData.phone
+            }
+          ]);
+
+        if (profileError) {
+          console.error("Profile Error:", profileError);
+          throw new Error("تم إنشاء الحساب ولكن فشل حفظ بيانات الملف الشخصي.");
+        }
+      }
 
       showSuccess('تهانينا! تم إنشاء حسابك بنجاح ✨');
       navigate('/');
       
     } catch (err) {
-      console.error("خطأ أثناء التسجيل:", err);
-      showError(err.message || 'حدث خطأ أثناء إنشاء الحساب.');
+      console.error(err);
+      showError(err.message || 'حدث خطأ غير متوقع أثناء إنشاء الحساب.');
     } finally {
       setLoading(false);
     }
