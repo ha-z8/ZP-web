@@ -76,8 +76,8 @@ export default function AdminLayout({ children }) {
 
       <footer className="w-full border-t border-slate-900 bg-slate-950 py-6">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row justify-between items-center gap-4 text-xs text-slate-500">
-          <p>© 2026 نظام إدارة لوميير السينمائي الحصري.</p>
-          <p className="text-[9px] tracking-widest text-amber-500/40 font-mono">LUMIÈRE SYSTEM V2.0 (ADMIN MODE)</p>
+          <p> نظام إدارة ©<span dir='ltr' className="text-amber-400">zobaidhphoto</span> الحصري 2026</p>
+          <p className="text-[9px] tracking-widest text-amber-500/40 font-mono">hazzaa SYSTEM V1.0</p>
         </div>
       </footer>
     </div>

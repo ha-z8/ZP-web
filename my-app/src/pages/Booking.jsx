@@ -188,11 +188,7 @@ export default function Booking() {
                     className="w-full bg-slate-950 border border-slate-800 text-slate-200 p-3 rounded-xl focus:outline-none focus:border-amber-500 text-sm cursor-pointer"
                   >
                     <option value="الرياض">الرياض</option>
-                    <option value="جدة">جدة</option>
-                    <option value="الدمام">الدمام / الخبر</option>
-                    <option value="مكة">مكة المكرمة</option>
-                    <option value="المدينة">المدينة المنورة</option>
-                    <option value="أخرى">مدينة أخرى</option>
+                    <option value="المزاحمية">المزاحمية</option>
                   </select>
                 </div>
               </div>

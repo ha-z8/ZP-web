@@ -108,9 +108,9 @@ export default function Layout({ children }) {
             <div>
               <h4 className="text-slate-200 font-bold text-sm mb-4">حسابات التواصل الاجتماعي</h4>
               <div className="flex gap-4 justify-start">
-                <a href="#" className="w-10 h-10 rounded-lg bg-slate-900 border border-slate-800 flex items-center justify-center hover:border-purple-500 transition-all"><img src="https://static.xx.fbcdn.net/assets/?set=help_center_about_page_illustrations&name=desktop-instagram-shield&density=1" className="w-6 h-6" /></a>
-                <a href="#" className="w-10 h-10 rounded-lg bg-slate-900 border border-slate-800 flex items-center justify-center hover:border-yellow-400 transition-all"><img src="https://cdn.creazilla.com/icons/7912114/snapchat-logo-icon-size_512.png" className="w-6 h-6" /></a>
-                <a href="#" className="w-10 h-10 rounded-lg bg-slate-900 border border-slate-800 flex items-center justify-center hover:border-emerald-400 transition-all"><img src="https://upload.wikimedia.org/wikipedia/commons/c/cc/WhatsApp_Logo.svg" className="w-6 h-6" /></a>
+                <a href="https://www.instagram.com/zobaidh_photographer/" className="w-10 h-10 rounded-lg bg-slate-900 border border-slate-800 flex items-center justify-center hover:border-purple-500 transition-all"><img src="https://static.xx.fbcdn.net/assets/?set=help_center_about_page_illustrations&name=desktop-instagram-shield&density=1" className="w-6 h-6" /></a>
+                <a href="https://www.snapchat.com/@zobaidh_photo" className="w-10 h-10 rounded-lg bg-slate-900 border border-slate-800 flex items-center justify-center hover:border-yellow-400 transition-all"><img src="https://cdn.creazilla.com/icons/7912114/snapchat-logo-icon-size_512.png" className="w-6 h-6" /></a>
+                <a href="https://api.whatsapp.com/send?phone=966554491860" className="w-10 h-10 rounded-lg bg-slate-900 border border-slate-800 flex items-center justify-center hover:border-emerald-400 transition-all"><img src="https://upload.wikimedia.org/wikipedia/commons/c/cc/WhatsApp_Logo.svg" className="w-6 h-6" /></a>
               </div>
             </div>
           </div>
