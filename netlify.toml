@@ -1,0 +1,4 @@
+[build]
+  base = ""          # اتركه فارغاً لأنه في الجذر الرئيسي
+  publish = "dist"   # أو مجلد البناء الخاص بك
+  command = "npm run build"
