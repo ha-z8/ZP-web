@@ -1,0 +1,138 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* 🖋️ تعريف خطوط ثمانية (Thmanyah) من مجلد الـ public مباشرة */
+@font-face {
+  font-family: 'Thmanyah';
+  src: url('/fonts/thmanyahsans-Light.woff2') format('woff2');
+  font-weight: 300;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Thmanyah';
+  src: url('/fonts/thmanyahsans-Regular.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Thmanyah';
+  src: url('/fonts/thmanyahsans-Medium.woff2') format('woff2');
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Thmanyah';
+  src: url('/fonts/thmanyahsans-Bold.woff2') format('woff2');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Thmanyah';
+  src: url('/fonts/thmanyahsans-Black.woff2') format('woff2');
+  font-weight: 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+:root {
+  /* ☀️ 1. الوضع الفاتح (كريمي دافئ ومتناسق مع الشعار) */
+  --brand-bg: #F5F2EB;          /* الخلفية العامة كريمي دافئ */
+  --brand-card: #EFECE3;        /* خلفية البطاقات العادية */
+  --brand-card-hover: #E7E3D8;  /* خلفية البطاقات عند الـ hover */
+  
+  /* تدرجات الـ Gradient الفخمة للوضع الفاتح */
+  --brand-gradient-start: #EFECE3;
+  --brand-gradient-end: #E3DCD1;
+
+  /* النصوص والوضوح */
+  --brand-text: #4F5443;        /* أخضر ترابي غامق للنصوص الرئيسية */
+  --brand-muted: #7A806E;       /* أخضر ترابي متوسط للنصوص الثانوية */
+
+  /* الأزرار والعناصر التفاعلية */
+  --brand-accent: #C8B1A0;      /* لون الزر الأساسي (بني/وردي ترابي ناعم) */
+  --brand-accent-hover: #B59C8B;/* لون الزر عند الـ Hover */
+  --brand-btn-text: #3B3F32;    /* لون النص داخل الزر ليكون واضحاً */
+
+  /* الحدود والخطوط الفاصلة */
+  --brand-border: #DED7CB;
+}
+
+.dark {
+  /* 🌙 2. الوضع الداكن الترابي (قهوة معتمة فاخرة ومتناسقة تماماً مع الهوية) */
+  --brand-bg: #1C1917;          /* خلفية ترابية داكنة جداً (حجرية/قهوة) */
+  --brand-card: #26221F;        /* خلفية البطاقات الداكنة الترابية الفخمة */
+  --brand-card-hover: #332E2A;  /* خلفية البطاقات عند الـ hover */
+  
+  /* تدرجات الـ Gradient للوضع الداكن */
+  --brand-gradient-start: #26221F;
+  --brand-gradient-end: #332E2A;
+
+  /* النصوص والوضوح في الوضع الداكن */
+  --brand-text: #EFECE3;        /* نص كريمي فاتح مريح للعين ومتناسق */
+  --brand-muted: #A8A29E;       /* رمادي ترابي هادئ للنصوص الثانوية */
+
+  /* الأزرار والعناصر التفاعلية في الداكن */
+  --brand-accent: #8C735F;      /* لون ترابي دافئ وبارز للأزرار */
+  --brand-accent-hover: #A3856E;/* لون الزر عند الـ Hover */
+  --brand-btn-text: #F5F2EB;    /* نص واضح داخل الأزرار */
+
+  /* الحدود والخطوط الفاصلة في الداكن */
+  --brand-border: #3D3732;      /* حدود ترابية دافئة وناعمة */
+}
+
+/* 🚀 فرض خط ثمانية على جميع العناصر والوسوم بلا استثناء */
+*, *::before, *::after {
+  font-family: 'Thmanyah', system-ui, -apple-system, sans-serif !important;
+}
+
+/* التنسيقات الأساسية للجسم */
+body {
+  background-color: var(--brand-bg);
+  color: var(--brand-text);
+  font-family: 'Thmanyah', system-ui, -apple-system, sans-serif !important;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* مساعدة عامة لتطبيق المتغيرات على الصفحات */
+@layer utilities {
+  .bg-brand-main {
+    background-color: var(--brand-bg) !important;
+  }
+  .bg-brand-card {
+    background-color: var(--brand-card) !important;
+  }
+  .hover\:bg-brand-card:hover,
+  .hover\:bg-brand-card-hover:hover {
+    background-color: var(--brand-card-hover) !important;
+  }
+  .text-brand-main {
+    color: var(--brand-text) !important;
+  }
+  .text-brand-muted {
+    color: var(--brand-muted) !important;
+  }
+  .bg-brand-btn {
+    background-color: var(--brand-accent) !important;
+    color: var(--brand-btn-text) !important;
+  }
+  .hover\:bg-brand-btn:hover {
+    background-color: var(--brand-accent-hover) !important;
+  }
+  .border-brand {
+    border-color: var(--brand-border) !important;
+  }
+  
+  /* دعم الـ Gradient المتناسق تلقائياً مع المظهر */
+  .brand-gradient {
+    background: linear-gradient(135deg, var(--brand-gradient-start), var(--brand-gradient-end)) !important;
+  }
+}
