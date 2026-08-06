@@ -13,6 +13,7 @@ export default function Booking() {
   const [chosenPackage, setChosenPackage] = useState(passedPackage);
   const [allPackages, setAllPackages] = useState([]); 
   const [loading, setLoading] = useState(false);
+  const [checkingAuth, setCheckingAuth] = useState(true);
 
   const [formData, setFormData] = useState({
     customer_name: '',
@@ -29,6 +30,43 @@ export default function Booking() {
     return `#ZP-${randomStr()}-${randomStr()}`;
   };
 
+  // التحقق من تسجيل الدخول وجلب بيانات الحساب تلقائياً
+  useEffect(() => {
+    async function checkUserAndProfile() {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        
+        if (!session) {
+          showError('يجب تسجيل الدخول أولاً لتتمكن من إتمام الحجز.');
+          navigate('/login');
+          return;
+        }
+
+        // جلب بيانات البروفايل المرتبطة بالمستخدم لملء الحقول تلقائياً
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('id', session.user.id)
+          .single();
+
+        setFormData(prev => ({
+          ...prev,
+          customer_name: profile?.full_name || session.user.user_metadata?.full_name || '',
+          customer_email: session.user.email || '',
+          customer_phone: profile?.phone || session.user.user_metadata?.phone || ''
+        }));
+
+      } catch (err) {
+        console.error('Auth Check Error:', err);
+      } finally {
+        setCheckingAuth(false);
+      }
+    }
+
+    checkUserAndProfile();
+  }, [navigate]);
+
+  // جلب الباقات إذا لم تُمرر من الصفحة السابقة
   useEffect(() => {
     if (!chosenPackage) {
       async function fetchPackages() {
@@ -49,15 +87,22 @@ export default function Booking() {
     setLoading(true);
 
     try {
-      const { data: { session } } = await supabase.auth.getSession();
-      const userId = session?.user?.id || null;
+      // التحقق الفوري من الجلسة لضمان الحصول على الـ user_id الصحيح عند الإرسال
+      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+      
+      if (sessionError || !session) {
+        showError('انتهت جلسة تسجيل الدخول، يرجى تسجيل الدخول مرة أخرى.');
+        navigate('/login');
+        return;
+      }
+
+      const userId = session.user.id;
 
       const { error } = await supabase
         .from('bookings')
         .insert([
           {
             user_id: userId,
-            package_id: chosenPackage.id,
             package_name: chosenPackage.name,      
             package_price: chosenPackage.price,    
             customer_name: formData.customer_name,
@@ -73,22 +118,33 @@ export default function Booking() {
 
       if (error) throw error;
 
-      showSuccess(`شكراً لك! تم رفع طلب حجز "${chosenPackage.name}" بنجاح. سيتواصل معك فريقنا قريباً. 🎉`);
-      navigate('/'); 
+      const packageName = chosenPackage.name || 'الباقة المختارة';
+      showSuccess(`شكراً لك! تم رفع طلب حجز (${packageName}) بنجاح. 🎉`);
+      
+      // التوجيه الصحيح لصفحة حساب المستخدم مع إعادة تحميل بسيطة لتحديث البيانات
+      navigate('/my-account'); 
     } catch (err) {
       console.error('Booking Error:', err);
-      showError('حدث خطأ أثناء حفظ الحجز. يرجى المحاولة مرة أخرى.');
+      showError('حدث خطأ أثناء حفظ الحجز: ' + (err.message || 'يرجى المحاولة مرة أخرى.'));
     } finally {
       setLoading(false);
     }
   };
+
+  if (checkingAuth) {
+    return (
+      <Layout>
+        <div className="text-center py-20 text-brand-main font-bold">جاري التحقق من الحساب الشخصي...</div>
+      </Layout>
+    );
+  }
 
   return (
     <Layout>
       <div className="max-w-4xl mx-auto px-4 py-10">
         <div className="text-center mb-12">
           <h2 className="text-3xl font-black text-brand-main mb-2">تأكيد حجز باقتك</h2>
-          <p className="text-brand-muted text-sm">أدخل بياناتك الشخصية وتفاصيل ليلة العمر لإتمام الحجز الرقمي الموثق</p>
+          <p className="text-brand-muted text-sm">بياناتك مسجلة تلقائياً من حسابك الشخصي لضمان توثيق الحجز الرقمي الموثق</p>
         </div>
 
         <div className="grid md:grid-cols-3 gap-8 items-start">
@@ -125,16 +181,16 @@ export default function Booking() {
                 </select>
               </div>
             )}
-            {/* ظل ناعم من الأسفل للأعلى */}
+            
             <div 
-  className="absolute inset-x-0 bottom-0 h-16 pointer-events-none"
-  style={{
-    background: 'linear-gradient(to top, var(--brand-card), transparent)'
-  }}
-></div>
+              className="absolute inset-x-0 bottom-0 h-16 pointer-events-none"
+              style={{
+                background: 'linear-gradient(to top, var(--brand-card), transparent)'
+              }}
+            ></div>
           </div>
 
-          {/* العمود الأساسي: نموذج المعلومات */}
+          {/* العمود الأساسي: نموذج المعلومات المسحوبة من الحساب */}
           <div className="md:col-span-2 bg-brand-card border border-brand rounded-2xl p-6 md:p-8 shadow-2xl backdrop-blur-sm">
             <h3 className="text-lg font-bold text-brand-main mb-6 flex items-center gap-2">
               <span className="text-brand-main">✦</span> معلومات الحجز والاتصال
@@ -142,32 +198,35 @@ export default function Booking() {
 
             <form onSubmit={handleBookingSubmit} className="space-y-5">
               <div>
-                <label className="block text-brand-muted text-xs font-semibold mb-1.5">الاسم بالكامل (صاحب الحجز)</label>
+                <label className="block text-brand-muted text-xs font-semibold mb-1.5">اسم العميل (صاحب الحجز)</label>
                 <input 
-                  type="text" required placeholder="مثال: سارة محمد العبدالله"
+                  type="text" 
+                  disabled
                   value={formData.customer_name}
-                  onChange={(e) => setFormData({...formData, customer_name: e.target.value})}
-                  className="w-full bg-brand-main border border-brand text-brand-main p-3 rounded-xl focus:outline-none text-sm"
+                  className="w-full bg-brand-main/50 border border-brand text-brand-main p-3 rounded-xl focus:outline-none text-sm cursor-not-allowed opacity-80"
                 />
               </div>
 
               <div className="grid sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-brand-muted text-xs font-semibold mb-1.5">رقم الجوال للتواصل وتأكيد العقد</label>
+                  <label className="block text-brand-muted text-xs font-semibold mb-1.5">رقم الجوال الأساسي</label>
                   <input 
-                    type="tel" required placeholder="05XXXXXXXX" dir="ltr"
+                    type="tel" 
+                    required 
+                    placeholder="05XXXXXXXX" 
+                    dir="ltr"
                     value={formData.customer_phone}
                     onChange={(e) => setFormData({...formData, customer_phone: e.target.value})}
                     className="w-full bg-brand-main border border-brand text-brand-main p-3 rounded-xl focus:outline-none text-sm text-left"
                   />
                 </div>
                 <div>
-                  <label className="block text-brand-muted text-xs font-semibold mb-1.5">البريد الإلكتروني (لإرسال الفاتورة)</label>
+                  <label className="block text-brand-muted text-xs font-semibold mb-1.5">البريد الإلكتروني (الحساب)</label>
                   <input 
-                    type="email" required placeholder="name@example.com" dir="ltr"
+                    type="email" 
+                    disabled
                     value={formData.customer_email}
-                    onChange={(e) => setFormData({...formData, customer_email: e.target.value})}
-                    className="w-full bg-brand-main border border-brand text-brand-main p-3 rounded-xl focus:outline-none text-sm text-left"
+                    className="w-full bg-brand-main/50 border border-brand text-brand-main p-3 rounded-xl focus:outline-none text-sm text-left cursor-not-allowed opacity-80"
                   />
                 </div>
               </div>
@@ -199,7 +258,8 @@ export default function Booking() {
               <div>
                 <label className="block text-brand-muted text-xs font-semibold mb-1.5">ملاحظات أو تفاصيل خاصة (اختياري)</label>
                 <textarea 
-                  rows="3" placeholder="أذكر لنا هنا اسم القاعة، أو أي تفاصيل أو شروط خاصة ترغب بإطلاع طاقم التصوير عليها..."
+                  rows="3" 
+                  placeholder="أذكر لنا هنا اسم القاعة، أو أي تفاصيل أو شروط خاصة ترغب بإطلاع طاقم التصوير عليها..."
                   value={formData.notes}
                   onChange={(e) => setFormData({...formData, notes: e.target.value})}
                   className="w-full bg-brand-main border border-brand text-brand-main p-3 rounded-xl focus:outline-none text-sm resize-none"
@@ -211,7 +271,7 @@ export default function Booking() {
                 disabled={loading || !chosenPackage}
                 className="w-full bg-brand-btn disabled:opacity-50 text-brand-main font-bold p-4 rounded-xl text-sm transition-all shadow-lg hover:scale-[1.01]"
               >
-                {loading ? 'جاري توثيق وتأكيد حجزك الفاخر...' : `تأكيد طلب حجز ${chosenPackage ? chosenPackage.name : 'الباقة'}`}
+                {loading ? 'جاري توثيق وتأكيد حجزك الفاخر...' : `تأكيد طلب حجزك ${chosenPackage ? chosenPackage.name : 'الباقة'}`}
               </button>
             </form>
           </div>

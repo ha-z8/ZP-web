@@ -8,10 +8,17 @@ export default function AlbumPage() {
   const [isAddPhotoModalOpen, setIsAddPhotoModalOpen] = useState(false);
   const [newPhotoUrl, setNewPhotoUrl] = useState('');
   const [submittingPhoto, setSubmittingPhoto] = useState(false);
+  const [isRefreshing, setIsRefreshing] = useState(false); // حالة تأثير زر التحديث
 
   const fetchData = async () => {
+    setIsRefreshing(true); // تفعيل تأثير التحميل والدوران
     const { data } = await supabase.from('album_photos').select('*').order('sort_order', { ascending: true });
     if (data) setPhotos(data);
+
+    // إيقاف تأثير التحميل بعد نصف ثانية ليوضح للمستخدم أن التحديث تم
+    setTimeout(() => {
+      setIsRefreshing(false);
+    }, 500);
   };
 
   useEffect(() => { fetchData(); }, []);
@@ -56,8 +63,24 @@ export default function AlbumPage() {
       <div className="bg-brand-card border border-brand rounded-2xl p-6 shadow-xl mb-10">
         <div className="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
           <h3 className="text-lg font-bold text-brand-main">🖼️ إدارة الألبوم</h3>
-          <div className="flex gap-2">
-            <button onClick={fetchData} className="bg-brand-main border border-brand text-brand-text text-xs font-bold px-4 py-2.5 rounded-xl hover:bg-brand-card-hover transition-all shadow-sm">تحديث 🔄</button>
+          <div className="flex gap-2 items-center">
+            {/* زر التحديث المحدث بنفس الشكل والتأثير */}
+            <button 
+              onClick={fetchData} 
+              disabled={isRefreshing}
+              className="bg-brand-main border border-brand text-brand-text text-xs font-bold px-4 py-2.5 rounded-xl hover:bg-brand-card-hover transition-all shadow-sm flex items-center gap-2 active:scale-95 disabled:opacity-70"
+            >
+              <svg 
+                className={`w-4 h-4 transition-transform ${isRefreshing ? 'animate-spin text-brand-accent' : ''}`} 
+                fill="none" 
+                stroke="currentColor" 
+                strokeWidth="2" 
+                viewBox="0 0 24 24"
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+              </svg>
+              {isRefreshing ? 'جاري التحديث...' : 'تحديث'}
+            </button>
             <button onClick={() => setIsAddPhotoModalOpen(true)} className="bg-brand-btn text-brand-text text-xs font-bold px-5 py-2.5 rounded-xl transition-all shadow-sm">➕ إضافة صورة</button>
           </div>
         </div>

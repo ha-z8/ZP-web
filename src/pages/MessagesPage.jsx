@@ -7,6 +7,7 @@ export default function MessagesPage() {
   const [messages, setMessages] = useState([]);
   const [searchQuery, setSearchQuery] = useState(''); 
   const [copiedId, setCopiedId] = useState(null);
+  const [isRefreshing, setIsRefreshing] = useState(false); // حالة تأثير زر التحديث
 
   // 🎨 ألوان الحالات الأصلية كما طلبت تماماً
   const getStatusStyle = (status) => {
@@ -39,12 +40,19 @@ export default function MessagesPage() {
   );
 
   const fetchData = async () => {
+    setIsRefreshing(true); // تفعيل تأثير التحميل والدوران
     const { data } = await supabase
       .from('expenses')
       .select('*')
       .like('category', 'رسالة تواصل%')
       .order('created_at', { ascending: false });
+    
     if (data) setMessages(data);
+
+    // إيقاف تأثير التحميل بعد نصف ثانية ليوضح للمستخدم أن التحديث تم
+    setTimeout(() => {
+      setIsRefreshing(false);
+    }, 500);
   };
 
   const handleUpdateStatus = async (id, status) => {
@@ -87,7 +95,23 @@ export default function MessagesPage() {
             className="w-full md:w-80 bg-brand-card border border-brand text-brand-text px-4 py-2 rounded-xl text-sm focus:outline-none shadow-sm"
           />
 
-          <button onClick={fetchData} className="bg-brand-card hover:bg-brand-card-hover border border-brand text-brand-text px-6 py-2 rounded-xl text-sm font-bold shadow-sm transition-all">تحديث</button>
+          {/* زر التحديث مع نفس تأثير الدوران والشكل التفاعلي */}
+          <button 
+            onClick={fetchData} 
+            disabled={isRefreshing}
+            className="bg-brand-card hover:bg-brand-card-hover border border-brand text-brand-text px-6 py-2 rounded-xl text-sm font-bold shadow-sm transition-all flex items-center gap-2 active:scale-95 disabled:opacity-70"
+          >
+            <svg 
+              className={`w-4 h-4 transition-transform ${isRefreshing ? 'animate-spin text-brand-accent' : ''}`} 
+              fill="none" 
+              stroke="currentColor" 
+              strokeWidth="2" 
+              viewBox="0 0 24 24"
+            >
+              <path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+            </svg>
+            {isRefreshing ? 'جاري التحديث...' : 'تحديث'}
+          </button>
         </div>
 
         <div className="space-y-6">

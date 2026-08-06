@@ -79,7 +79,7 @@ export default function AdminLayout({ children }) {
       <footer className="w-full border-t border-brand bg-brand-card py-6">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row justify-between items-center gap-4 text-xs text-brand-muted">
           <p> نظـــام إدارة ©<span dir='ltr' className="text-brand-text font-bold">zobaidhphoto</span> الحصـــري 2026</p>
-          <p className="text-[9px] tracking-widest text-brand-muted font-mono">hazzaa SYSTEM V1.0</p>
+          <p className="text-[9px] tracking-widest text-brand-muted font-mono">Diriyah Studios SYSTEM V1.0</p>
         </div>
       </footer>
     </div>

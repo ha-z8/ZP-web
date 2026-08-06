@@ -5,9 +5,9 @@ export default function ThemeToggle() {
 
   useEffect(() => {
     const savedTheme = localStorage.getItem('theme');
+    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
     
-    // إذا كان المستخدم قد حفظ خيار "dark" مسبقاً، نفّذه. وإلا اجعله فاتحاً بشكل افتراضي دائم.
-    if (savedTheme === 'dark') {
+    if (savedTheme === 'dark' || (!savedTheme && prefersDark)) {
       setIsDark(true);
       document.documentElement.classList.add('dark');
     } else {

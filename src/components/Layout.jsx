@@ -138,15 +138,32 @@ export default function Layout({ children }) {
             <div>
               <h4 className="text-brand-text font-bold text-sm mb-4">حسابـات التواصـل الاجتماعـي</h4>
               <div className="flex gap-4 justify-start">
-                <a href="https://www.instagram.com/zobaidh_photographer/" className="w-10 h-10 rounded-lg bg-brand-main border border-brand flex items-center justify-center hover:border-brand-accent transition-all"><img src="https://static.xx.fbcdn.net/assets/?set=help_center_about_page_illustrations&name=desktop-instagram-shield&density=1" className="w-6 h-6" alt="Instagram" /></a>
-                <a href="https://www.snapchat.com/@zobaidh_photo" className="w-10 h-10 rounded-lg bg-brand-main border border-brand flex items-center justify-center hover:border-brand-accent transition-all"><img src="https://cdn.creazilla.com/icons/7912114/snapchat-logo-icon-size_512.png" className="w-6 h-6" alt="Snapchat" /></a>
-                <a href="https://api.whatsapp.com/send?phone=966554491860" className="w-10 h-10 rounded-lg bg-brand-main border border-brand flex items-center justify-center hover:border-brand-accent transition-all"><img src="https://upload.wikimedia.org/wikipedia/commons/c/cc/WhatsApp_Logo.svg" className="w-6 h-6" alt="WhatsApp" /></a>
+                <a href="https://www.instagram.com/zobaidh_photographer/" target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-lg bg-brand-main border border-brand flex items-center justify-center hover:border-brand-accent transition-all">
+                  <img src="https://api.iconify.design/mdi:instagram.svg?color=%238c7a6b" className="w-5 h-5 object-contain" alt="Instagram" />
+                </a>
+                <a href="https://www.snapchat.com/@zobaidh_photo" target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-lg bg-brand-main border border-brand flex items-center justify-center hover:border-brand-accent transition-all">
+                  <img src="https://api.iconify.design/ri:snapchat-line.svg?color=%238c7a6b" className="w-5 h-5 object-contain" alt="Snapchat" />
+                </a>
+                <a href="https://api.whatsapp.com/send?phone=966554491860" target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-lg bg-brand-main border border-brand flex items-center justify-center hover:border-brand-accent transition-all">
+                  <img src="https://api.iconify.design/mdi:whatsapp.svg?color=%238c7a6b" className="w-5 h-5 object-contain" alt="WhatsApp" />
+                </a>
               </div>
             </div>
           </div>
           <div className="flex flex-col sm:flex-row justify-between items-center gap-4 text-center sm:text-right text-xs text-brand-muted">
-            <p>جميع الحقوق محفوظـة لــــــدى <samp dir='ltr'> Zobaidhphoto © 2026</samp></p>
-            <p className="text-[10px] tracking-wider text-brand-muted">MADE WITH PERFECTION BY hazzaa</p>
+            <p>جميع الحقوق محفوظة لــــــــــدى © 2026 | zobaidhphoto</p>
+            
+            <div dir="ltr" className="text-xs tracking-wider text-brand-muted flex items-center gap-1.5">
+              <span>MADE WITH PERFECTION BY</span>
+              <a 
+                href="https://diriyahstudios.netlify.app/" 
+                target="_blank" 
+                rel="noopener noreferrer" 
+                className="font-extrabold text-brand-text/90 hover:text-brand-text transition-all no-underline"
+              >
+                Diriyah Studios
+              </a>
+            </div>
           </div>
         </div>
       </footer>

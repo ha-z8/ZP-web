@@ -47,7 +47,9 @@ export default function MyAccount() {
   const handleGlobalRefresh = async () => {
     setIsRefreshing(true);
     await loadAllData();
-    setIsRefreshing(false);
+    setTimeout(() => {
+      setIsRefreshing(false);
+    }, 500);
   };
 
   return (
@@ -58,12 +60,23 @@ export default function MyAccount() {
             <h2 className="text-3xl font-black text-brand-main">مركز المتابعة</h2>
             <p className="text-brand-muted mt-2">إدارة الحجوزات ومتابعة سجل الطلبات</p>
           </div>
+          
+          {/* زر التحديث المحدث بنفس الشكل والتأثير والتصميم الموحد */}
           <button 
             onClick={handleGlobalRefresh} 
             disabled={isRefreshing} 
-            className="bg-brand-card hover:bg-brand-card-hover text-brand-text border border-brand px-6 py-2.5 rounded-xl font-bold transition-all flex items-center justify-center gap-2 shadow-sm"
+            className="bg-brand-card hover:bg-brand-card-hover text-brand-text border border-brand px-6 py-2.5 rounded-xl text-sm font-bold transition-all flex items-center justify-center gap-2 shadow-sm active:scale-95 disabled:opacity-70"
           >
-            {isRefreshing ? 'جاري التحديث...' : '🔄 تحديث الكل'}
+            <svg 
+              className={`w-4 h-4 transition-transform ${isRefreshing ? 'animate-spin text-brand-accent' : ''}`} 
+              fill="none" 
+              stroke="currentColor" 
+              strokeWidth="2" 
+              viewBox="0 0 24 24"
+            >
+              <path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+            </svg>
+            {isRefreshing ? 'جاري التحديث...' : 'تحديث الكل'}
           </button>
         </header>
 

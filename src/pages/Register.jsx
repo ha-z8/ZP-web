@@ -86,7 +86,7 @@ export default function Register() {
           <div>
             <label className="block text-brand-muted text-xs font-semibold mb-1">الاسم بالكامل</label>
             <input 
-              type="text" required placeholder="مثال: سارة محمد"
+              type="text" required placeholder="مثال: سارة محمد الدوسري"
               value={formData.fullName}
               onChange={(e) => setFormData({...formData, fullName: e.target.value})}
               className="w-full bg-brand-main border border-brand text-brand-text p-3 rounded-xl focus:outline-none text-sm"

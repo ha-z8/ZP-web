@@ -6,8 +6,10 @@ import AdminLayout from '../components/AdminLayout';
 export default function Dashboard() {
   const [stats, setStats] = useState({ bookingsCount: 0, messagesCount: 0, usersCount: 0 });
   const [loading, setLoading] = useState(false);
+  const [isRefreshing, setIsRefreshing] = useState(false); // حالة تأثير زر التحديث
 
   const fetchData = async () => {
+    setIsRefreshing(true);
     setLoading(true);
     const [bkgs, msgs, usr] = await Promise.all([
       supabase.from('bookings').select('*', { count: 'exact', head: true }),
@@ -20,6 +22,11 @@ export default function Dashboard() {
       usersCount: usr.count || 0
     });
     setLoading(false);
+    
+    // إيقاف تأثير التحميل والدوران بعد نصف ثانية
+    setTimeout(() => {
+      setIsRefreshing(false);
+    }, 500);
   };
 
   useEffect(() => { fetchData(); }, []);
@@ -40,18 +47,23 @@ export default function Dashboard() {
           <h2 className="text-2xl font-black text-brand-main">لوحــــة التحكم</h2>
           <p className="text-brand-muted text-sm">مرحبــاً بـك مجدداً في لوحــة إدارة النظام.</p>
         </div>
+        
+        {/* زر التحديث المحدث بنفس الشكل والتأثير والتصميم الموحد */}
         <button 
-          onClick={async (e) => {
-            const btn = e.target;
-            btn.innerText = "جاري التحديث... ⏳";
-            btn.disabled = true;
-            await fetchData();
-            btn.innerText = "تحديث البيانات 🔄";
-            btn.disabled = false;
-          }}
-          className="bg-brand-card border border-brand text-brand-text text-xs font-bold px-4 py-2.5 rounded-xl transition-all shadow-sm hover:bg-brand-card-hover"
+          onClick={fetchData} 
+          disabled={isRefreshing}
+          className="bg-brand-card hover:bg-brand-card-hover border border-brand text-brand-text text-xs font-bold px-6 py-2.5 rounded-xl transition-all shadow-sm flex items-center gap-2 active:scale-95 disabled:opacity-70"
         >
-          تحديث البيانات 🔄
+          <svg 
+            className={`w-4 h-4 transition-transform ${isRefreshing ? 'animate-spin text-brand-accent' : ''}`} 
+            fill="none" 
+            stroke="currentColor" 
+            strokeWidth="2" 
+            viewBox="0 0 24 24"
+          >
+            <path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+          </svg>
+          {isRefreshing ? 'جاري التحديث...' : 'تحديث البيانات'}
         </button>
       </div>
 
