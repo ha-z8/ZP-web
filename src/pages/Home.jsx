@@ -27,12 +27,12 @@ export default function Home() {
   useEffect(() => {
     async function fetchHomeData() {
       try {
-        // جلب الباقات المفعلة فقط التي لا تحمل حالة التعطل
+        // جلب الباقات المفعلة فقط مرتبة حسب display_order
         const { data: pkgs } = await supabase
           .from('packages')
           .select('*')
           .eq('is_active', true)
-          .order('price', { ascending: true });
+          .order('display_order', { ascending: true });
         
         if (pkgs) setPackages(pkgs);
 
@@ -296,7 +296,7 @@ export default function Home() {
                   style={{
                     background: 'linear-gradient(to top, var(--brand-card), color-mix(in srgb, var(--brand-card) 70%, transparent), transparent)'
                   }}
-                ></div>         
+                ></div>        
                
                 <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
                   <span className="bg-brand-card text-brand-main w-12 h-12 flex items-center justify-center rounded-full backdrop-blur-sm text-xl border border-brand shadow-lg">

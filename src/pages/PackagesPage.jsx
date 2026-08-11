@@ -17,16 +17,23 @@ export default function PackagesPage() {
     price: 1000, 
     description: '', 
     image_url: DEFAULT_IMAGE_URL, 
-    features_string: '' 
+    features_string: '',
+    display_order: 1 
   });
 
   const [submittingAdd, setSubmittingAdd] = useState(false);
   const [submittingEdit, setSubmittingEdit] = useState(false);
 
+  // مصفوفة توليد أرقام الترتيب من 1 إلى 20
+  const orderOptions = Array.from({ length: 20 }, (_, i) => i + 1);
+
   const fetchData = async () => {
     setIsRefreshing(true);
-    const { data: pkgsData } = await supabase.from('packages').select('*').order('price', { ascending: true });
-    if (pkgsData) setPackages(pkgsData);
+    const { data: pkgsData } = await supabase.from('packages').select('*').order('display_order', { ascending: true });
+    if (pkgsData) {
+      setPackages(pkgsData);
+      setNewPackage(prev => ({ ...prev, display_order: pkgsData.length + 1 <= 20 ? pkgsData.length + 1 : 20 }));
+    }
 
     setTimeout(() => {
       setIsRefreshing(false);
@@ -39,8 +46,18 @@ export default function PackagesPage() {
     e.preventDefault();
     setSubmittingAdd(true);
     const featuresArray = newPackage.features_string.split('\n').map(item => item.trim()).filter(item => item !== '');
+    const requestedOrder = Number(newPackage.display_order) || (packages.length + 1);
     
     try {
+      for (let pkg of packages) {
+        if (pkg.display_order >= requestedOrder) {
+          await supabase
+            .from('packages')
+            .update({ display_order: pkg.display_order + 1 })
+            .eq('id', pkg.id);
+        }
+      }
+
       const { data, error } = await supabase
         .from('packages')
         .insert([{ 
@@ -49,15 +66,16 @@ export default function PackagesPage() {
           description: newPackage.description,
           image_url: newPackage.image_url || DEFAULT_IMAGE_URL,
           features: featuresArray,
+          display_order: requestedOrder,
           is_active: true 
         }])
         .select();
 
       if (error) throw error;
       
-      setPackages(prev => [...prev, ...data]);
+      await fetchData();
       setIsAddModalOpen(false);
-      setNewPackage({ name: '', price: 1000, description: '', image_url: DEFAULT_IMAGE_URL, features_string: '' });
+      setNewPackage({ name: '', price: 1000, description: '', image_url: DEFAULT_IMAGE_URL, features_string: '', display_order: Math.min(packages.length + 2, 20) });
       showSuccess('تم إضافة الباقة الجديدة بنجاح!');
     } catch (err) { showError('حدث خطأ أثناء الإضافة.'); } finally { setSubmittingAdd(false); }
   };
@@ -66,23 +84,41 @@ export default function PackagesPage() {
     e.preventDefault();
     setSubmittingEdit(true);
     const featuresArray = editingPackage.features_string.split('\n').map(item => item.trim()).filter(item => item !== '');
-    
+    const newOrder = Number(editingPackage.display_order);
+    const oldOrder = editingPackage.original_order;
+
     try {
-      const { data, error } = await supabase
+      if (newOrder !== oldOrder) {
+        if (newOrder > oldOrder) {
+          for (let pkg of packages) {
+            if (pkg.id !== editingPackage.id && pkg.display_order > oldOrder && pkg.display_order <= newOrder) {
+              await supabase.from('packages').update({ display_order: pkg.display_order - 1 }).eq('id', pkg.id);
+            }
+          }
+        } else {
+          for (let pkg of packages) {
+            if (pkg.id !== editingPackage.id && pkg.display_order >= newOrder && pkg.display_order < oldOrder) {
+              await supabase.from('packages').update({ display_order: pkg.display_order + 1 }).eq('id', pkg.id);
+            }
+          }
+        }
+      }
+
+      const { error } = await supabase
         .from('packages')
         .update({ 
           name: editingPackage.name,
           price: Number(editingPackage.price),
           description: editingPackage.description,
           image_url: editingPackage.image_url,
-          features: featuresArray 
+          features: featuresArray,
+          display_order: newOrder 
         })
-        .eq('id', editingPackage.id)
-        .select();
+        .eq('id', editingPackage.id);
 
       if (error) throw error;
       
-      setPackages(packages.map(p => p.id === editingPackage.id ? data[0] : p));
+      await fetchData();
       setIsEditModalOpen(false);
       showSuccess('تم حفظ التعديلات بنجاح.');
     } catch (err) { showError('حدث خطأ أثناء حفظ التعديلات.'); } finally { setSubmittingEdit(false); }
@@ -110,7 +146,7 @@ export default function PackagesPage() {
     if (!isConfirmed) return;
     try {
       await supabase.from('packages').delete().eq('id', packageId);
-      setPackages(packages.filter(p => p.id !== packageId));
+      await fetchData();
       showSuccess('تم حذف الباقة بنجاح.');
     } catch (err) { showError('حدث خطأ أثناء محاولة حذف الباقة.'); }
   };
@@ -143,7 +179,10 @@ export default function PackagesPage() {
               {isRefreshing ? 'جاري التحديث...' : 'تحديث'}
             </button>
             <button 
-              onClick={() => setIsAddModalOpen(true)} 
+              onClick={() => {
+                setNewPackage(prev => ({ ...prev, display_order: Math.min(packages.length + 1, 20) }));
+                setIsAddModalOpen(true);
+              }} 
               className="bg-brand-btn text-brand-text text-xs font-bold px-5 py-2.5 rounded-xl transition-all shadow-sm flex items-center gap-1.5"
             >
               <svg className="w-4 h-4 ml-1.5" fill="none" stroke="currentColor" strokeWidth="3" viewBox="0 0 24 24" style={{ color: 'inherit' }}>
@@ -167,6 +206,7 @@ export default function PackagesPage() {
             <table className="w-full text-right text-sm text-brand-text">
               <thead className="bg-brand-main text-brand-muted text-xs font-bold border-b border-brand">
                 <tr>
+                  <th className="p-4">الترتيب</th>
                   <th className="p-4">اسم الباقة</th>
                   <th className="p-4">السعر</th>
                   <th className="p-4">الحالة</th>
@@ -177,6 +217,7 @@ export default function PackagesPage() {
               <tbody className="divide-y divide-brand bg-brand-card">
                 {packages.map((pkg) => (
                   <tr key={pkg.id} className="hover:bg-brand-main transition-all">
+                    <td className="p-4 font-bold text-brand-accent">{pkg.display_order}</td>
                     <td className="p-4 font-bold text-brand-main">{pkg.name}</td>
                     <td className="p-4 text-brand-main font-mono font-bold">{Number(pkg.price).toLocaleString()} ر.س</td>
                     <td className="p-4">
@@ -187,7 +228,6 @@ export default function PackagesPage() {
                     </td>
                     <td className="p-4 hidden md:table-cell text-xs text-brand-muted max-w-xs truncate">{pkg.description}</td>
                     <td className="p-4 text-center flex justify-center items-center gap-2">
-                      {/* زر التفعيل / التعطيل بحلة احترافية */}
                       <button 
                         onClick={() => handleToggleStatus(pkg)} 
                         className={`border text-xs font-bold px-3.5 py-2 rounded-xl transition-all shadow-sm flex items-center gap-1.5 ${pkg.is_active !== false ? 'bg-amber-500/10 hover:bg-amber-500/20 text-amber-700 border-amber-500/30' : 'bg-green-500/10 hover:bg-green-500/20 text-green-700 border-green-500/30'}`}
@@ -209,9 +249,8 @@ export default function PackagesPage() {
                         )}
                       </button>
 
-                      {/* زر التعديل */}
                       <button 
-                        onClick={() => { setEditingPackage({...pkg, features_string: pkg.features ? pkg.features.join('\n') : ''}); setIsEditModalOpen(true); }} 
+                        onClick={() => { setEditingPackage({...pkg, features_string: pkg.features ? pkg.features.join('\n') : '', display_order: pkg.display_order ?? 1, original_order: pkg.display_order ?? 1}); setIsEditModalOpen(true); }} 
                         className="bg-brand-main hover:bg-brand-card-hover border border-brand text-brand-text text-xs font-semibold px-3.5 py-2 rounded-xl transition-all shadow-sm flex items-center gap-1.5"
                       >
                         <svg className="w-3.5 h-3.5 text-brand-accent" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
@@ -220,7 +259,6 @@ export default function PackagesPage() {
                         تعديل
                       </button>
 
-                      {/* زر الحذف النهائي */}
                       <button 
                         onClick={() => handleDeletePackage(pkg.id)} 
                         className="bg-red-500/10 hover:bg-red-500/20 border border-red-500/30 text-red-700 hover:text-red-800 text-xs font-semibold px-3.5 py-2 rounded-xl transition-all shadow-sm flex items-center gap-1.5"
@@ -254,9 +292,23 @@ export default function PackagesPage() {
                 <label className="block text-brand-muted text-xs font-semibold mb-1">اسم الباقة</label>
                 <input type="text" required value={editingPackage.name} onChange={(e) => setEditingPackage({...editingPackage, name: e.target.value})} className="w-full bg-brand-main border border-brand p-3 rounded-xl text-brand-text text-sm focus:outline-none" placeholder="اسم الباقة" />
               </div>
-              <div>
-                <label className="block text-brand-muted text-xs font-semibold mb-1">السعر</label>
-                <input type="number" required value={editingPackage.price} onChange={(e) => setEditingPackage({...editingPackage, price: e.target.value})} className="w-full bg-brand-main border border-brand p-3 rounded-xl text-brand-text text-sm focus:outline-none" placeholder="السعر" />
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-brand-muted text-xs font-semibold mb-1">السعر</label>
+                  <input type="number" required value={editingPackage.price} onChange={(e) => setEditingPackage({...editingPackage, price: e.target.value})} className="w-full bg-brand-main border border-brand p-3 rounded-xl text-brand-text text-sm focus:outline-none" placeholder="السعر" />
+                </div>
+                <div>
+                  <label className="block text-brand-muted text-xs font-semibold mb-1">الترتيب</label>
+                  <select 
+                    value={editingPackage.display_order ?? 1} 
+                    onChange={(e) => setEditingPackage({...editingPackage, display_order: Number(e.target.value)})} 
+                    className="w-full bg-brand-main border border-brand p-3 rounded-xl text-brand-text text-sm focus:outline-none"
+                  >
+                    {orderOptions.map((num) => (
+                      <option key={num} value={num}>الترتيب {num}</option>
+                    ))}
+                  </select>
+                </div>
               </div>
               <div>
                 <label className="block text-brand-muted text-xs font-semibold mb-1">رابط صورة الباقة (URL)</label>
@@ -291,9 +343,23 @@ export default function PackagesPage() {
                 <label className="block text-brand-muted text-xs font-semibold mb-1">اسم الباقة</label>
                 <input type="text" required placeholder="اسم الباقة" value={newPackage.name} onChange={(e) => setNewPackage({...newPackage, name: e.target.value})} className="w-full bg-brand-main border border-brand p-3 rounded-xl text-brand-text text-sm focus:outline-none" />
               </div>
-              <div>
-                <label className="block text-brand-muted text-xs font-semibold mb-1">السعر</label>
-                <input type="number" required placeholder="السعر" value={newPackage.price} onChange={(e) => setNewPackage({...newPackage, price: e.target.value})} className="w-full bg-brand-main border border-brand p-3 rounded-xl text-brand-text text-sm focus:outline-none" />
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-brand-muted text-xs font-semibold mb-1">السعر</label>
+                  <input type="number" required placeholder="السعر" value={newPackage.price} onChange={(e) => setNewPackage({...newPackage, price: e.target.value})} className="w-full bg-brand-main border border-brand p-3 rounded-xl text-brand-text text-sm focus:outline-none" />
+                </div>
+                <div>
+                  <label className="block text-brand-muted text-xs font-semibold mb-1">الترتيب</label>
+                  <select 
+                    value={newPackage.display_order} 
+                    onChange={(e) => setNewPackage({...newPackage, display_order: Number(e.target.value)})} 
+                    className="w-full bg-brand-main border border-brand p-3 rounded-xl text-brand-text text-sm focus:outline-none"
+                  >
+                    {orderOptions.map((num) => (
+                      <option key={num} value={num}>الترتيب {num}</option>
+                    ))}
+                  </select>
+                </div>
               </div>
               <div>
                 <label className="block text-brand-muted text-xs font-semibold mb-1">رابط صورة الباقة (URL)</label>
