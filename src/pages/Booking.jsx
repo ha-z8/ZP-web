@@ -30,27 +30,6 @@ export default function Booking() {
     return `#ZP-${randomStr()}-${randomStr()}`;
   };
 
-  // دالة إرسال الإشعار الفوري عبر OneSignal REST API بأمان باستخدام ملف .env
-  const sendBookingNotification = async (clientName, packageName) => {
-    try {
-      await fetch("https://onesignal.com/api/v1/notifications", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json; charset=utf-8",
-          "Authorization": `Basic ${import.meta.env.VITE_ONESIGNAL_REST_KEY}`
-        },
-        body: JSON.stringify({
-          app_id: "63ea57dd-4d4a-4a12-acbb-fa0fa5d4c575",
-          included_segments: ["All"],
-          headings: { en: "حجز جديد📸" },
-          contents: { en: `تم استلام حجز جديد من العميل: ${clientName} للباقة: ${packageName}` }
-        }),
-      });
-    } catch (error) {
-      console.error("Error sending notification:", error);
-    }
-  };
-
   // التحقق من تسجيل الدخول وجلب بيانات الحساب تلقائياً
   useEffect(() => {
     async function checkUserAndProfile() {
@@ -137,9 +116,6 @@ export default function Booking() {
         ]);
 
       if (error) throw error;
-
-      // إرسال الإشعار الفوري عبر OneSignal بعد نجاح الحجز مباشرة
-      await sendBookingNotification(formData.customer_name, packageName);
 
       showSuccess(`شكراً لك! تم رفع طلب حجز (${packageName}) بنجاح. 🎉`);
       navigate('/my-account'); 
