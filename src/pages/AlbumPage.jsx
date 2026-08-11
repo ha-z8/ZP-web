@@ -2,8 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { supabase } from '../supabase';
 import { showSuccess, showError, confirmAction } from '../utils/alerts';
 import AdminLayout from '../components/AdminLayout';
+import { useNavigate } from 'react-router-dom';
 
 export default function AlbumPage() {
+  const navigate = useNavigate();
   const [photos, setPhotos] = useState([]);
   const [isAddPhotoModalOpen, setIsAddPhotoModalOpen] = useState(false);
   const [newPhotoUrl, setNewPhotoUrl] = useState('');
@@ -14,7 +16,7 @@ export default function AlbumPage() {
 
   const CLOUDINARY_CLOUD_NAME = 'dnlqwwi89'; 
   const CLOUDINARY_UPLOAD_PRESET = 'my_album_preset';
-  const EDGE_FUNCTION_DELETE_URL = 'https://bcrpvhpayyjowsnwmmmu.supabase.co/functions/v1/delete-image'; 
+  const EDGE_FUNCTION_DELETE_URL = 'https://bcrpvhpayyjowsnwmmmu.supabase.co/functions/v1/cloudinary-manager'; 
 
   const fetchData = async () => {
     setIsRefreshing(true);
@@ -176,7 +178,6 @@ export default function AlbumPage() {
 
   return (
     <AdminLayout>
-      {/* نافذة العرض السينمائي (التكبير الكامل) */}
       {fullScreenImage && (
         <div 
           className="fixed inset-0 z-[100] flex items-center justify-center bg-black/95 backdrop-blur-md cursor-pointer" 
@@ -205,6 +206,12 @@ export default function AlbumPage() {
             إدارة ألبوم الصور
           </h3>
           <div className="flex gap-2 items-center">
+            <button 
+              onClick={() => navigate('/dashboard/cloud-storage')}
+              className="bg-brand-main border border-brand text-brand-text text-xs font-bold px-4 py-2.5 rounded-xl hover:bg-brand-card-hover transition-all shadow-sm flex items-center gap-2"
+            >
+              التخزين السحابي
+            </button>
             <button 
               onClick={fetchData} 
               disabled={isRefreshing}

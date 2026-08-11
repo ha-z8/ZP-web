@@ -20,6 +20,7 @@ import CalendarPage from './pages/CalendarPage';
 import UsersPage from './pages/UsersPage';
 import AlbumPage from './pages/AlbumPage';
 import AdminPoliciesPage from './pages/AdminPoliciesPage'; // صفحة إدارة السياسات
+import CloudStoragePage from './pages/CloudStoragePage'; // صفحة التخزين السحابي الجديدة
 
 export default function App() {
   return (
@@ -42,6 +43,7 @@ export default function App() {
         <Route path="/dashboard/album" element={<ProtectedRoute><AlbumPage /></ProtectedRoute>} />
         <Route path="/dashboard/calendar" element={<ProtectedRoute><CalendarPage /></ProtectedRoute>} />
         <Route path="/dashboard/policies" element={<ProtectedRoute><AdminPoliciesPage /></ProtectedRoute>} /> {/* مسار إدارة السياسات */}
+        <Route path="/dashboard/cloud-storage" element={<ProtectedRoute><CloudStoragePage /></ProtectedRoute>} /> {/* مسار صفحة التخزين السحابي */}
 
         {/* مسار للخطأ 404 */}
         <Route path="*" element={<NotFound />} />

@@ -21,8 +21,13 @@ export default function PackagesPage() {
     display_order: 1 
   });
 
+  const [uploading, setUploading] = useState(false);
   const [submittingAdd, setSubmittingAdd] = useState(false);
   const [submittingEdit, setSubmittingEdit] = useState(false);
+
+  // إعدادات Cloudinary تماماً مثل صفحة الألبوم
+  const CLOUDINARY_CLOUD_NAME = 'dnlqwwi89'; 
+  const CLOUDINARY_UPLOAD_PRESET = 'my_album_preset';
 
   // مصفوفة توليد أرقام الترتيب من 1 إلى 20
   const orderOptions = Array.from({ length: 20 }, (_, i) => i + 1);
@@ -41,6 +46,42 @@ export default function PackagesPage() {
   };
 
   useEffect(() => { fetchData(); }, []);
+
+  // دالة رفع الصور عبر Cloudinary
+  const handleFileUpload = async (e, isEditing = false) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    setUploading(true);
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('upload_preset', CLOUDINARY_UPLOAD_PRESET);
+
+      const response = await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/image/upload`, {
+        method: 'POST',
+        body: formData
+      });
+
+      const data = await response.json();
+      
+      if (data.secure_url) {
+        if (isEditing) {
+          setEditingPackage(prev => ({ ...prev, image_url: data.secure_url }));
+        } else {
+          setNewPackage(prev => ({ ...prev, image_url: data.secure_url }));
+        }
+        showSuccess('تم رفع الصورة بنجاح!');
+      } else {
+        throw new Error(data.error?.message || 'فشل الرفع');
+      }
+    } catch (err) {
+      console.error(err);
+      showError('حدث خطأ أثناء رفع الصورة، يرجى المحاولة مرة أخرى.');
+    } finally {
+      setUploading(false);
+    }
+  };
 
   const handleAddPackage = async (e) => {
     e.preventDefault();
@@ -281,10 +322,6 @@ export default function PackagesPage() {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-md p-4">
           <div className="bg-brand-card border border-brand rounded-3xl w-full max-w-2xl p-8 shadow-2xl overflow-y-auto max-h-[90vh]">
             <h3 className="text-xl font-black text-brand-main mb-6 flex items-center gap-2">
-              <svg className="w-5 h-5 text-brand-accent" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-                <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-              </svg>
               تعديل بيانات الباقة
             </h3>
             <form onSubmit={handleUpdatePackage} className="space-y-4">
@@ -310,10 +347,31 @@ export default function PackagesPage() {
                   </select>
                 </div>
               </div>
+
+              {/* قسم رفع الصورة عبر Cloudinary أو إدخال رابط مباشر */}
               <div>
-                <label className="block text-brand-muted text-xs font-semibold mb-1">رابط صورة الباقة (URL)</label>
-                <input type="url" required value={editingPackage.image_url} onChange={(e) => setEditingPackage({...editingPackage, image_url: e.target.value})} className="w-full bg-brand-main border border-brand p-3 rounded-xl text-brand-text text-sm focus:outline-none" placeholder="رابط صورة الباقة (URL)" />
+                <label className="block text-brand-muted text-xs font-semibold mb-1">صورة الباقة (رفع من الجهاز أو رابط URL)</label>
+                <div className="space-y-2">
+                  <input 
+                    type="file" 
+                    accept="image/*"
+                    onChange={(e) => handleFileUpload(e, true)}
+                    disabled={uploading}
+                    className="w-full bg-brand-main border border-brand p-3 rounded-xl text-brand-text text-sm cursor-pointer file:ml-4 file:py-1 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-bold file:bg-brand-btn file:text-brand-text"
+                  />
+                  <div className="text-center text-xs text-brand-muted">— أو أدخل الرابط يدوياً —</div>
+                  <input 
+                    type="url" 
+                    required 
+                    value={editingPackage.image_url} 
+                    onChange={(e) => setEditingPackage({...editingPackage, image_url: e.target.value})} 
+                    className="w-full bg-brand-main border border-brand p-3 rounded-xl text-brand-text text-sm focus:outline-none" 
+                    placeholder="رابط الصورة (URL)" 
+                  />
+                </div>
+                {uploading && <p className="text-xs text-brand-accent mt-1">جاري رفع الصورة...</p>}
               </div>
+
               <div>
                 <label className="block text-brand-muted text-xs font-semibold mb-1">الوصف القصير</label>
                 <input type="text" value={editingPackage.description} onChange={(e) => setEditingPackage({...editingPackage, description: e.target.value})} className="w-full bg-brand-main border border-brand p-3 rounded-xl text-brand-text text-sm focus:outline-none" placeholder="الوصف القصير" />
@@ -333,9 +391,6 @@ export default function PackagesPage() {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-md p-4">
           <div className="bg-brand-card border border-brand rounded-3xl w-full max-w-2xl p-8 shadow-2xl overflow-y-auto max-h-[90vh]">
             <h3 className="text-xl font-black text-brand-main mb-6 flex items-center gap-2">
-              <svg className="w-4 h-4 ml-1.5" fill="none" stroke="currentColor" strokeWidth="3" viewBox="0 0 24 24" style={{ color: 'inherit' }}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
-              </svg>
               إضافة باقة جديدة
             </h3>
             <form onSubmit={handleAddPackage} className="space-y-4">
@@ -361,10 +416,31 @@ export default function PackagesPage() {
                   </select>
                 </div>
               </div>
+
+              {/* قسم رفع الصورة عبر Cloudinary أو إدخال رابط مباشر */}
               <div>
-                <label className="block text-brand-muted text-xs font-semibold mb-1">رابط صورة الباقة (URL)</label>
-                <input type="url" required placeholder="رابط صورة الباقة (URL)" value={newPackage.image_url} onChange={(e) => setNewPackage({...newPackage, image_url: e.target.value})} className="w-full bg-brand-main border border-brand p-3 rounded-xl text-brand-text text-sm focus:outline-none" />
+                <label className="block text-brand-muted text-xs font-semibold mb-1">صورة الباقة (رفع من الجهاز أو رابط URL)</label>
+                <div className="space-y-2">
+                  <input 
+                    type="file" 
+                    accept="image/*"
+                    onChange={(e) => handleFileUpload(e, false)}
+                    disabled={uploading}
+                    className="w-full bg-brand-main border border-brand p-3 rounded-xl text-brand-text text-sm cursor-pointer file:ml-4 file:py-1 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-bold file:bg-brand-btn file:text-brand-text"
+                  />
+                  <div className="text-center text-xs text-brand-muted">— أو أدخل الرابط يدوياً أو اتركة فارغ لـ استخدام الصورة التلقائية —</div>
+                  <input 
+                    type="url" 
+                    required 
+                    placeholder="رابط الصورة (URL)" 
+                    value={newPackage.image_url} 
+                    onChange={(e) => setNewPackage({...newPackage, image_url: e.target.value})} 
+                    className="w-full bg-brand-main border border-brand p-3 rounded-xl text-brand-text text-sm focus:outline-none" 
+                  />
+                </div>
+                {uploading && <p className="text-xs text-brand-accent mt-1">جاري رفع الصورة...</p>}
               </div>
+
               <div>
                 <label className="block text-brand-muted text-xs font-semibold mb-1">الوصف القصير</label>
                 <input type="text" placeholder="الوصف القصير" value={newPackage.description} onChange={(e) => setNewPackage({...newPackage, description: e.target.value})} className="w-full bg-brand-main border border-brand p-3 rounded-xl text-brand-text text-sm focus:outline-none" />
