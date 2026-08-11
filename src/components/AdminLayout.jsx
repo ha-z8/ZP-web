@@ -3,6 +3,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { supabase } from '../supabase';
 import ThemeToggle from './ThemeToggle';
 import zLogo from '../assets/z-logo.png'; 
+import { APP_VERSION } from '../config/version';
 
 export default function AdminLayout({ children }) {
   const navigate = useNavigate();
@@ -49,24 +50,34 @@ export default function AdminLayout({ children }) {
             {isDashboard ? (
               <button
                 onClick={() => navigate('/')}
-                className="bg-brand-main hover:bg-brand-card-hover border border-brand text-brand-text text-[10px] font-bold px-3 py-2 rounded-lg transition-all shadow-sm"
+                className="bg-brand-main hover:bg-brand-card-hover border border-brand text-brand-text text-[10px] font-bold px-3 py-2 rounded-lg transition-all shadow-sm flex items-center gap-1.5"
               >
-                👁️ عــــرض الـمـوقــع
+                <svg className="w-3.5 h-3.5 text-brand-accent" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                </svg>
+                عــــرض الـمـوقــع
               </button>
             ) : (
               <button
                 onClick={() => navigate('/dashboard')}
-                className="bg-brand-card hover:bg-brand-card-hover border border-brand text-brand-text text-[10px] font-bold px-3 py-2 rounded-lg transition-all shadow-sm"
+                className="bg-brand-card hover:bg-brand-card-hover border border-brand text-brand-text text-[10px] font-bold px-3 py-2 rounded-lg transition-all shadow-sm flex items-center gap-1.5"
               >
-                🔙 لوحـــة التحكــم
+                <svg className="w-3.5 h-3.5 text-brand-accent" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+                </svg>
+                لوحـــة التحكــم
               </button>
             )}
 
             <button
               onClick={handleLogout}
-              className="bg-brand-card hover:bg-brand-card-hover border border-brand text-red-700 hover:text-red-800 text-[10px] font-bold px-3 py-2 rounded-lg transition-all shadow-sm"
+              className="bg-brand-card hover:bg-brand-card-hover border border-brand text-red-700 hover:text-red-800 text-[10px] font-bold px-3 py-2 rounded-lg transition-all shadow-sm flex items-center gap-1.5"
             >
-              تسجيـل خـــروج 🚪
+              <svg className="w-3.5 h-3.5 text-red-600" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+              </svg>
+              تسجيـل خـــروج
             </button>
           </div>
         </div>
@@ -79,7 +90,9 @@ export default function AdminLayout({ children }) {
       <footer className="w-full border-t border-brand bg-brand-card py-6">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row justify-between items-center gap-4 text-xs text-brand-muted">
           <p> نظـــام إدارة ©<span dir='ltr' className="text-brand-text font-bold">zobaidhphoto</span> الحصـــري 2026</p>
-          <p className="text-[9px] tracking-widest text-brand-muted font-mono">Diriyah Studios SYSTEM V1.0</p>
+          <p className="text-[9px] tracking-widest text-brand-muted font-mono uppercase">
+            Diriyah Studios SYSTEM {APP_VERSION}
+          </p>
         </div>
       </footer>
     </div>

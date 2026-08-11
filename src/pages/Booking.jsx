@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate, Link } from 'react-router-dom';
 import { supabase } from '../supabase';
 import Layout from '../components/Layout';
 import { showSuccess, showError } from '../utils/alerts';
@@ -30,6 +30,27 @@ export default function Booking() {
     return `#ZP-${randomStr()}-${randomStr()}`;
   };
 
+  // دالة إرسال الإشعار الفوري عبر OneSignal REST API بأمان باستخدام ملف .env
+  const sendBookingNotification = async (clientName, packageName) => {
+    try {
+      await fetch("https://onesignal.com/api/v1/notifications", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json; charset=utf-8",
+          "Authorization": `Basic ${import.meta.env.VITE_ONESIGNAL_REST_KEY}`
+        },
+        body: JSON.stringify({
+          app_id: "63ea57dd-4d4a-4a12-acbb-fa0fa5d4c575",
+          included_segments: ["All"],
+          headings: { en: "حجز جديد📸" },
+          contents: { en: `تم استلام حجز جديد من العميل: ${clientName} للباقة: ${packageName}` }
+        }),
+      });
+    } catch (error) {
+      console.error("Error sending notification:", error);
+    }
+  };
+
   // التحقق من تسجيل الدخول وجلب بيانات الحساب تلقائياً
   useEffect(() => {
     async function checkUserAndProfile() {
@@ -42,7 +63,6 @@ export default function Booking() {
           return;
         }
 
-        // جلب بيانات البروفايل المرتبطة بالمستخدم لملء الحقول تلقائياً
         const { data: profile } = await supabase
           .from('profiles')
           .select('*')
@@ -87,7 +107,6 @@ export default function Booking() {
     setLoading(true);
 
     try {
-      // التحقق الفوري من الجلسة لضمان الحصول على الـ user_id الصحيح عند الإرسال
       const { data: { session }, error: sessionError } = await supabase.auth.getSession();
       
       if (sessionError || !session) {
@@ -97,13 +116,14 @@ export default function Booking() {
       }
 
       const userId = session.user.id;
+      const packageName = chosenPackage.name || 'الباقة المختارة';
 
       const { error } = await supabase
         .from('bookings')
         .insert([
           {
             user_id: userId,
-            package_name: chosenPackage.name,      
+            package_name: packageName,      
             package_price: chosenPackage.price,    
             customer_name: formData.customer_name,
             customer_phone: formData.customer_phone,
@@ -118,10 +138,10 @@ export default function Booking() {
 
       if (error) throw error;
 
-      const packageName = chosenPackage.name || 'الباقة المختارة';
+      // إرسال الإشعار الفوري عبر OneSignal بعد نجاح الحجز مباشرة
+      await sendBookingNotification(formData.customer_name, packageName);
+
       showSuccess(`شكراً لك! تم رفع طلب حجز (${packageName}) بنجاح. 🎉`);
-      
-      // التوجيه الصحيح لصفحة حساب المستخدم مع إعادة تحميل بسيطة لتحديث البيانات
       navigate('/my-account'); 
     } catch (err) {
       console.error('Booking Error:', err);
@@ -148,7 +168,6 @@ export default function Booking() {
         </div>
 
         <div className="grid md:grid-cols-3 gap-8 items-start">
-          {/* العمود الجانبي: تفاصيل الباقة */}
           <div className="md:col-span-1 bg-brand-card border border-brand rounded-2xl p-6 sticky top-6 shadow-2xl relative overflow-hidden">
             <h3 className="text-sm font-bold text-brand-muted border-b border-brand pb-3 mb-4">الباقة المختارة حالياً</h3>
             
@@ -190,7 +209,6 @@ export default function Booking() {
             ></div>
           </div>
 
-          {/* العمود الأساسي: نموذج المعلومات المسحوبة من الحساب */}
           <div className="md:col-span-2 bg-brand-card border border-brand rounded-2xl p-6 md:p-8 shadow-2xl backdrop-blur-sm">
             <h3 className="text-lg font-bold text-brand-main mb-6 flex items-center gap-2">
               <span className="text-brand-main">✦</span> معلومات الحجز والاتصال
@@ -250,7 +268,6 @@ export default function Booking() {
                     className="w-full bg-brand-main border border-brand text-brand-main p-3 rounded-xl focus:outline-none text-sm cursor-pointer"
                   >
                     <option value="الرياض">الرياض</option>
-                    <option value="المزاحمية">المزاحمية</option>
                   </select>
                 </div>
               </div>
@@ -264,6 +281,18 @@ export default function Booking() {
                   onChange={(e) => setFormData({...formData, notes: e.target.value})}
                   className="w-full bg-brand-main border border-brand text-brand-main p-3 rounded-xl focus:outline-none text-sm resize-none"
                 ></textarea>
+              </div>
+
+              <div className="bg-brand-main/60 border border-brand p-4 rounded-xl text-xs text-brand-muted flex items-center justify-between gap-3">
+                <span>يرجى قراءة السياسات والشروط والأحكام بعناية قبل تأكيد الحجز.</span>
+                <Link 
+                  to="/policies" 
+                  target="_blank" 
+                  rel="noopener noreferrer" 
+                  className="font-bold text-brand-main underline hover:text-brand-accent transition-colors shrink-0"
+                >
+                  صفحة السياسات 📋
+                </Link>
               </div>
 
               <button 

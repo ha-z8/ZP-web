@@ -63,7 +63,7 @@ export default function Register() {
         }
       }
 
-      showSuccess('تهانينا! تم إنشاء حسابك بنجاح ✨');
+      showSuccess('تهانينا! تم إنشاء حسابك بنجاح');
       navigate('/');
       
     } catch (err) {
@@ -78,7 +78,11 @@ export default function Register() {
     <Layout>
       <div className="max-w-md mx-auto my-8 bg-brand-card border border-brand rounded-2xl p-6 md:p-8 shadow-2xl backdrop-blur-sm text-right">
         <div className="text-center mb-6">
-          <span className="text-3xl filter drop-shadow-[0_0_10px_rgba(200,177,160,0.4)]">✨</span>
+          <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-brand-main border border-brand shadow-sm mb-4">
+            <svg className="w-8 h-8 text-brand-accent" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
+            </svg>
+          </div>
           <h2 className="text-2xl font-black text-brand-main mt-2">انضم إلى zobaidhphoto</h2>
         </div>
 
@@ -130,10 +134,24 @@ export default function Register() {
                 type={showPassword ? 'text' : 'password'} required placeholder="••••••••" dir="ltr"
                 value={formData.password}
                 onChange={(e) => setFormData({...formData, password: e.target.value})}
-                className="w-full bg-brand-main border border-brand text-brand-text p-3 pl-12 rounded-xl focus:outline-none text-sm text-left"
+                className="w-full bg-brand-main border border-brand text-brand-text p-3 pr-4 pl-12 rounded-xl focus:outline-none text-sm text-left font-mono"
               />
-              <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute left-3 top-1/2 -translate-y-1/2 text-brand-muted text-sm">
-                {showPassword ? '👁️' : '🙈'}
+              <button 
+                type="button" 
+                onClick={() => setShowPassword(!showPassword)} 
+                className="absolute left-3 top-1/2 -translate-y-1/2 p-1.5 text-brand-muted hover:text-brand-text transition-all"
+                title={showPassword ? "إخفاء كلمة المرور" : "إظهار كلمة المرور"}
+              >
+                {showPassword ? (
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M3.98 8.223A10.477 10.477 0 001.934 12C3.226 16.338 7.244 19.5 12 19.5c.993 0 1.953-.138 2.863-.395M6.228 6.228A10.45 10.45 0 0112 4.5c4.756 0 8.773 3.162 10.065 7.498a10.523 10.523 0 01-4.293 5.774M6.228 6.228L3 3m3.228 3.228l3.65 3.65m7.894 7.894L21 21m-3.228-3.228l-3.65-3.65m0 0a3 3 0 10-4.243-4.243l4.242 4.242z" />
+                  </svg>
+                ) : (
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                  </svg>
+                )}
               </button>
             </div>
           </div>
@@ -145,15 +163,29 @@ export default function Register() {
                 type={showConfirmPassword ? 'text' : 'password'} required placeholder="••••••••" dir="ltr"
                 value={formData.confirmPassword}
                 onChange={(e) => setFormData({...formData, confirmPassword: e.target.value})}
-                className="w-full bg-brand-main border border-brand text-brand-text p-3 pl-12 rounded-xl focus:outline-none text-sm text-left"
+                className="w-full bg-brand-main border border-brand text-brand-text p-3 pr-4 pl-12 rounded-xl focus:outline-none text-sm text-left font-mono"
               />
-              <button type="button" onClick={() => setShowConfirmPassword(!showConfirmPassword)} className="absolute left-3 top-1/2 -translate-y-1/2 text-brand-muted text-sm">
-                {showConfirmPassword ? '👁️' : '🙈'}
+              <button 
+                type="button" 
+                onClick={() => setShowConfirmPassword(!showConfirmPassword)} 
+                className="absolute left-3 top-1/2 -translate-y-1/2 p-1.5 text-brand-muted hover:text-brand-text transition-all"
+                title={showConfirmPassword ? "إخفاء كلمة المرور" : "إظهار كلمة المرور"}
+              >
+                {showConfirmPassword ? (
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M3.98 8.223A10.477 10.477 0 001.934 12C3.226 16.338 7.244 19.5 12 19.5c.993 0 1.953-.138 2.863-.395M6.228 6.228A10.45 10.45 0 0112 4.5c4.756 0 8.773 3.162 10.065 7.498a10.523 10.523 0 01-4.293 5.774M6.228 6.228L3 3m3.228 3.228l3.65 3.65m7.894 7.894L21 21m-3.228-3.228l-3.65-3.65m0 0a3 3 0 10-4.243-4.243l4.242 4.242z" />
+                  </svg>
+                ) : (
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                  </svg>
+                )}
               </button>
             </div>
           </div>
 
-          <button type="submit" disabled={loading} className="w-full bg-brand-btn text-brand-main font-bold p-3.5 rounded-xl text-sm transition-all shadow-lg mt-2 disabled:opacity-50">
+          <button type="submit" disabled={loading} className="w-full bg-brand-btn text-brand-main font-bold p-3.5 rounded-xl text-sm transition-all shadow-lg mt-2 disabled:opacity-50 hover:bg-brand-accent-hover">
             {loading ? 'جاري تهيئة حسابكِ الفاخر...' : 'إنشاء حساب جديد'}
           </button>
         </form>

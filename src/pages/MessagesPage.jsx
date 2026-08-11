@@ -7,9 +7,9 @@ export default function MessagesPage() {
   const [messages, setMessages] = useState([]);
   const [searchQuery, setSearchQuery] = useState(''); 
   const [copiedId, setCopiedId] = useState(null);
-  const [isRefreshing, setIsRefreshing] = useState(false); // حالة تأثير زر التحديث
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
-  // 🎨 ألوان الحالات الأصلية كما طلبت تماماً
+  // 🎨 ألوان الحالات الأصلية
   const getStatusStyle = (status) => {
     switch (status) {
       case 'بانتظار المراجعة': return 'text-amber-400 bg-amber-500/10 border-amber-500/30';
@@ -40,7 +40,7 @@ export default function MessagesPage() {
   );
 
   const fetchData = async () => {
-    setIsRefreshing(true); // تفعيل تأثير التحميل والدوران
+    setIsRefreshing(true);
     const { data } = await supabase
       .from('expenses')
       .select('*')
@@ -49,7 +49,6 @@ export default function MessagesPage() {
     
     if (data) setMessages(data);
 
-    // إيقاف تأثير التحميل بعد نصف ثانية ليوضح للمستخدم أن التحديث تم
     setTimeout(() => {
       setIsRefreshing(false);
     }, 500);
@@ -95,7 +94,6 @@ export default function MessagesPage() {
             className="w-full md:w-80 bg-brand-card border border-brand text-brand-text px-4 py-2 rounded-xl text-sm focus:outline-none shadow-sm"
           />
 
-          {/* زر التحديث مع نفس تأثير الدوران والشكل التفاعلي */}
           <button 
             onClick={fetchData} 
             disabled={isRefreshing}
@@ -117,7 +115,9 @@ export default function MessagesPage() {
         <div className="space-y-6">
           {filteredMessages.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-20 bg-brand-card border border-brand rounded-3xl border-dashed shadow-sm">
-              <span className="text-4xl mb-4">🔍</span>
+              <svg className="w-12 h-12 text-brand-muted mb-4" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              </svg>
               <h3 className="text-xl font-bold text-brand-main">لم يتم العثور على نتائج</h3>
             </div>
           ) : (

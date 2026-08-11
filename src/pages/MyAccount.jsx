@@ -14,7 +14,6 @@ export default function MyAccount() {
     setTimeout(() => setCopiedId(null), 2000);
   };
 
-  // 🎨 ألوان الحالات الأصلية كما طلبت
   const getStatusStyle = (status) => {
     const s = (status || '').trim();
     switch (s) {
@@ -61,19 +60,12 @@ export default function MyAccount() {
             <p className="text-brand-muted mt-2">إدارة الحجوزات ومتابعة سجل الطلبات</p>
           </div>
           
-          {/* زر التحديث المحدث بنفس الشكل والتأثير والتصميم الموحد */}
           <button 
             onClick={handleGlobalRefresh} 
             disabled={isRefreshing} 
             className="bg-brand-card hover:bg-brand-card-hover text-brand-text border border-brand px-6 py-2.5 rounded-xl text-sm font-bold transition-all flex items-center justify-center gap-2 shadow-sm active:scale-95 disabled:opacity-70"
           >
-            <svg 
-              className={`w-4 h-4 transition-transform ${isRefreshing ? 'animate-spin text-brand-accent' : ''}`} 
-              fill="none" 
-              stroke="currentColor" 
-              strokeWidth="2" 
-              viewBox="0 0 24 24"
-            >
+            <svg className={`w-4 h-4 transition-transform ${isRefreshing ? 'animate-spin text-brand-accent' : ''}`} fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
             </svg>
             {isRefreshing ? 'جاري التحديث...' : 'تحديث الكل'}
@@ -87,15 +79,17 @@ export default function MyAccount() {
             
             {/* قسم الحجوزات */}
             <section>
-              <h3 className="text-lg font-bold text-brand-main mb-6">📅 حجوزاتي</h3>
+              <h3 className="text-lg font-bold text-brand-main mb-6 flex items-center gap-2">
+                <svg className="w-5 h-5 text-brand-accent" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+                حجوزاتي
+              </h3>
               {data.bookings.length === 0 ? (
                 <div className="bg-brand-card border border-brand border-dashed rounded-2xl p-12 text-center shadow-sm">
                   <p className="text-brand-muted text-lg">لا توجد حجوزات حالياً</p>
-                  <p className="text-brand-muted text-sm mt-2">جميع حجوزاتك ستظهر هنا فور إتمامها</p>
                 </div>
               ) : (
                 data.bookings.map(b => (
-                  <div key={b.id} className="bg-brand-card p-6 rounded-2xl border border-brand mb-6 shadow-xl transition-all relative overflow-hidden">
+                  <div key={b.id} className="bg-brand-card p-6 rounded-2xl border border-brand mb-6 shadow-xl transition-all">
                     <div className="flex justify-between items-start mb-6">
                       <div>
                         <h4 className="font-bold text-2xl text-brand-main">{b.package_name}</h4>
@@ -112,8 +106,8 @@ export default function MyAccount() {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 bg-brand-main p-6 rounded-xl border border-brand">
                        {[ {l:'المدينة', v:b.event_city}, {l:'التاريخ', v:b.event_date}, {l:'العميل', v:b.customer_name}, {l:'الهاتف', v:b.customer_phone} ].map(i => (
                           <div key={i.l} className="flex justify-between border-b border-brand pb-2">
-                             <span className="text-brand-muted text-sm">{i.l}:</span>
-                             <span className="text-brand-text font-medium text-sm">{i.v}</span>
+                               <span className="text-brand-muted text-sm">{i.l}:</span>
+                               <span className="text-brand-text font-medium text-sm">{i.v}</span>
                           </div>
                        ))}
                     </div>
@@ -124,15 +118,17 @@ export default function MyAccount() {
 
             {/* قسم الرسائل */}
             <section>
-              <h3 className="text-lg font-bold text-brand-main mb-6">✉️ سجل التواصل والرسائل</h3>
+              <h3 className="text-lg font-bold text-brand-main mb-6 flex items-center gap-2">
+                <svg className="w-5 h-5 text-brand-accent" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>
+                سجل التواصل والرسائل
+              </h3>
               {data.messages.length === 0 ? (
                 <div className="bg-brand-card border border-brand border-dashed rounded-2xl p-12 text-center shadow-sm">
                     <p className="text-brand-muted text-lg">لا توجد سجلات تواصل</p>
-                    <p className="text-brand-muted text-sm mt-2">لم تقم بإرسال أي رسائل بعد</p>
                 </div>
               ) : (
                 data.messages.map(m => (
-                  <div key={m.id} className="bg-brand-card p-6 rounded-2xl border border-brand mb-6 shadow-xl relative overflow-hidden">
+                  <div key={m.id} className="bg-brand-card p-6 rounded-2xl border border-brand mb-6 shadow-xl">
                     <div className="flex justify-between items-start mb-4">
                       <h4 className="font-bold text-brand-main">{m.category}</h4>
                       <span className={`px-3 py-1 rounded-lg text-[10px] font-bold border ${getStatusStyle(m.status)}`}>{m.status}</span>
@@ -143,8 +139,8 @@ export default function MyAccount() {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
                       {[{l:'الاسم', v:m.client_name}, {l:'الهاتف', v:m.client_phone}, {l:'الإيميل', v:m.client_email}, {l:'التاريخ', v:new Date(m.created_at).toLocaleDateString('ar-SA')}].map(field => (
                           <div key={field.l} className="flex justify-between border-b border-brand pb-2">
-                              <span className="text-brand-muted">{field.l}:</span>
-                              <span className="text-brand-text">{field.v}</span>
+                               <span className="text-brand-muted">{field.l}:</span>
+                               <span className="text-brand-text">{field.v}</span>
                           </div>
                       ))}
                     </div>

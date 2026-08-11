@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../supabase';
 
@@ -15,12 +15,22 @@ export default function ProtectedRoute({ children }) {
       if (data?.role === 'admin') {
         setIsAdmin(true);
       } else {
-        navigate('/'); // طرده إلى الصفحة الرئيسية إذا لم يكن أدمن
+        navigate('/'); 
       }
     }
     checkAdmin();
   }, [navigate]);
 
-  if (isAdmin === null) return <div>جاري التحقق...</div>;
+  if (isAdmin === null) {
+    return (
+      <div className="min-h-screen bg-brand-main flex justify-center items-center">
+        <div className="flex flex-col items-center gap-3">
+          <div className="w-10 h-10 border-4 border-brand-accent border-t-transparent rounded-full animate-spin"></div>
+          <span className="text-brand-muted text-xs font-semibold">جاري التحقق من الصلاحيات...</span>
+        </div>
+      </div>
+    );
+  }
+
   return children;
 }

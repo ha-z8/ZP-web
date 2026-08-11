@@ -5,11 +5,17 @@ import AdminLayout from '../components/AdminLayout';
 
 export default function BookingsPage() {
   const [bookings, setBookings] = useState([]);
+  const [packages, setPackages] = useState([]); // قائمة الباقات الفعلية
   const [searchQuery, setSearchQuery] = useState(''); 
   const [copiedId, setCopiedId] = useState(null);
-  const [isRefreshing, setIsRefreshing] = useState(false); // حالة تأثير زر التحديث
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
-  // 🎨 ألوان الحالات الأصلية كما طلبته تماماً
+  // حالات نافذة التعديل الشامل
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [editingBooking, setEditingBooking] = useState(null);
+  const [submittingEdit, setSubmittingEdit] = useState(false);
+
+  // 🎨 ألوان الحالات الأصلية
   const getStatusStyle = (status) => {
     switch (status) {
       case 'بانتظار المراجعة': return 'text-amber-400 bg-amber-500/10 border-amber-500/30';
@@ -41,29 +47,71 @@ export default function BookingsPage() {
   );
 
   const fetchData = async () => {
-    setIsRefreshing(true); // تفعيل تأثير التحميل عند الضغط
-    const { data, error } = await supabase.from('bookings').select('*').order('created_at', { ascending: false });
+    setIsRefreshing(true);
     
-    if (error) {
+    // جلب الحجوزات والباقات معاً
+    const [{ data: bookingsData, error: bookingsError }, { data: pkgsData }] = await Promise.all([
+      supabase.from('bookings').select('*').order('created_at', { ascending: false }),
+      supabase.from('packages').select('*').order('price', { ascending: true })
+    ]);
+    
+    if (bookingsError) {
       showError('خطأ أثناء جلب الحجوزات');
-      console.error(error);
-    } else if (data) {
-      setBookings(data);
+      console.error(bookingsError);
+    } else if (bookingsData) {
+      setBookings(bookingsData);
+    }
+
+    if (pkgsData) {
+      setPackages(pkgsData);
     }
     
-    // إيقاف تأثير التحميل بعد نصف ثانية ليوضح للمستخدم أن التحديث تم
     setTimeout(() => {
       setIsRefreshing(false);
     }, 500);
   };
 
-  const handleUpdate = async (id, status) => {
+  const handleUpdateStatus = async (id, status) => {
     const { error } = await supabase.from('bookings').update({ status }).eq('id', id);
     if (!error) {
       setBookings(bookings.map(b => b.id === id ? { ...b, status } : b));
-      showSuccess('تم التحديث بنجاح');
+      showSuccess('تم تحديث الحالة بنجاح');
     } else {
       showError('خطأ أثناء التحديث: ' + error.message);
+    }
+  };
+
+  // دالة حفظ التعديلات الشاملة للحجز
+  const handleSaveFullEdit = async (e) => {
+    e.preventDefault();
+    setSubmittingEdit(true);
+
+    try {
+      const { data, error } = await supabase
+        .from('bookings')
+        .update({
+          customer_name: editingBooking.customer_name,
+          customer_phone: editingBooking.customer_phone,
+          customer_email: editingBooking.customer_email,
+          package_name: editingBooking.package_name,
+          package_price: Number(editingBooking.package_price),
+          event_date: editingBooking.event_date,
+          event_city: editingBooking.event_city,
+          notes: editingBooking.notes
+        })
+        .eq('id', editingBooking.id)
+        .select();
+
+      if (error) throw error;
+
+      setBookings(bookings.map(b => b.id === editingBooking.id ? data[0] : b));
+      setIsEditModalOpen(false);
+      showSuccess('تم حفظ تعديلات الحجز بنجاح!');
+    } catch (err) {
+      showError('حدث خطأ أثناء حفظ التعديلات.');
+      console.error(err);
+    } finally {
+      setSubmittingEdit(false);
     }
   };
 
@@ -91,7 +139,7 @@ export default function BookingsPage() {
     <AdminLayout>
       <div className="max-w-5xl mx-auto py-8">
         <div className="flex flex-col md:flex-row justify-between items-center mb-8 gap-4">
-          <h2 className="text-2xl font-black text-brand-main">إدارة الحجوزات مقسمة حسب الحالة</h2>
+          <h2 className="text-2xl font-black text-brand-main">إدارة الحجوزات</h2>
           
           <input 
             type="text" 
@@ -101,7 +149,6 @@ export default function BookingsPage() {
             className="w-full md:w-80 bg-brand-card border border-brand text-brand-text px-4 py-2 rounded-xl text-sm focus:outline-none shadow-sm"
           />
 
-          {/* زر التحديث مع تأثير تفاعلي ودوران أيقونة */}
           <button 
             onClick={fetchData} 
             disabled={isRefreshing}
@@ -122,7 +169,9 @@ export default function BookingsPage() {
 
         {filteredBookings.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-20 bg-brand-card border border-brand rounded-3xl border-dashed shadow-sm">
-            <span className="text-4xl mb-4">🔍</span>
+            <svg className="w-12 h-12 text-brand-muted mb-4" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
             <h3 className="text-xl font-bold text-brand-main">لا توجد نتائج مطابقة</h3>
           </div>
         ) : (
@@ -155,7 +204,7 @@ export default function BookingsPage() {
                           </div>
                           
                           <div className="flex items-center gap-3 flex-wrap">
-                            <select value={b.status} onChange={(e) => handleUpdate(b.id, e.target.value)} 
+                            <select value={b.status} onChange={(e) => handleUpdateStatus(b.id, e.target.value)} 
                                     className={`px-4 py-1.5 rounded-full text-xs font-bold border cursor-pointer ${getStatusStyle(b.status)}`}>
                               <option value="بانتظار المراجعة">بانتظار المراجعة</option>
                               <option value="تمت المراجعة">تمت المراجعة</option>
@@ -163,6 +212,17 @@ export default function BookingsPage() {
                               <option value="انتظار الدفع">انتظار الدفع</option>
                               <option value="ملغي">ملغي</option>
                             </select>
+
+                            {/* زر فتح نافذة التعديل الشامل */}
+                            <button 
+                              onClick={() => { setEditingBooking(b); setIsEditModalOpen(true); }}
+                              className="bg-brand-main hover:bg-brand-card-hover border border-brand text-brand-text px-3 py-1.5 rounded-lg text-xs font-bold shadow-sm transition-all flex items-center gap-1.5"
+                            >
+                              <svg className="w-3.5 h-3.5 text-brand-accent" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                              </svg>
+                              تعديل الحجز
+                            </button>
 
                             <button onClick={() => handleDelete(b.id)} className="text-red-700 hover:text-red-800 bg-brand-main px-3 py-1.5 rounded-lg text-xs font-bold border border-brand shadow-sm">حذف</button>
                           </div>
@@ -192,6 +252,142 @@ export default function BookingsPage() {
           </div>
         )}
       </div>
+
+      {/* نافذة (Modal) تعديل بيانات الحجز بالكامل */}
+      {isEditModalOpen && editingBooking && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-md p-4">
+          <div className="bg-brand-card border border-brand rounded-3xl w-full max-w-2xl p-8 shadow-2xl overflow-y-auto max-h-[90vh]">
+            <h3 className="text-xl font-black text-brand-main mb-6 flex items-center gap-2">
+              <svg className="w-5 h-5 text-brand-accent" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+              </svg>
+              تعديل معلومات الحجز بالكامل
+            </h3>
+            
+            <form onSubmit={handleSaveFullEdit} className="space-y-4">
+              <div>
+                <label className="block text-brand-muted text-xs font-semibold mb-1">اسم العميل</label>
+                <input 
+                  type="text" 
+                  required 
+                  value={editingBooking.customer_name || ''} 
+                  onChange={(e) => setEditingBooking({...editingBooking, customer_name: e.target.value})} 
+                  className="w-full bg-brand-main border border-brand p-3 rounded-xl text-brand-text text-sm focus:outline-none" 
+                />
+              </div>
+
+              <div className="grid sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-brand-muted text-xs font-semibold mb-1">رقم الهاتف</label>
+                  <input 
+                    type="text" 
+                    required 
+                    value={editingBooking.customer_phone || ''} 
+                    onChange={(e) => setEditingBooking({...editingBooking, customer_phone: e.target.value})} 
+                    className="w-full bg-brand-main border border-brand p-3 rounded-xl text-brand-text text-sm focus:outline-none" 
+                  />
+                </div>
+                <div>
+                  <label className="block text-brand-muted text-xs font-semibold mb-1">البريد الإلكتروني</label>
+                  <input 
+                    type="email" 
+                    value={editingBooking.customer_email || ''} 
+                    onChange={(e) => setEditingBooking({...editingBooking, customer_email: e.target.value})} 
+                    className="w-full bg-brand-main border border-brand p-3 rounded-xl text-brand-text text-sm focus:outline-none" 
+                  />
+                </div>
+              </div>
+
+              <div className="grid sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-brand-muted text-xs font-semibold mb-1">اختر الباقة</label>
+                  <select 
+                    required 
+                    value={editingBooking.package_name || ''} 
+                    onChange={(e) => {
+                      const selectedPkgName = e.target.value;
+                      const foundPkg = packages.find(p => p.name === selectedPkgName);
+                      setEditingBooking({
+                        ...editingBooking, 
+                        package_name: selectedPkgName,
+                        package_price: foundPkg ? foundPkg.price : editingBooking.package_price
+                      });
+                    }}
+                    className="w-full bg-brand-main border border-brand p-3 rounded-xl text-brand-text text-sm focus:outline-none cursor-pointer"
+                  >
+                    <option value="">-- اختر الباقة --</option>
+                    {packages.map(pkg => (
+                      <option key={pkg.id} value={pkg.name}>
+                        {pkg.name} ({Number(pkg.price).toLocaleString()} ر.س)
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-brand-muted text-xs font-semibold mb-1">سعر الباقة (ر.س)</label>
+                  <input 
+                    type="number" 
+                    required 
+                    value={editingBooking.package_price || ''} 
+                    onChange={(e) => setEditingBooking({...editingBooking, package_price: e.target.value})} 
+                    className="w-full bg-brand-main border border-brand p-3 rounded-xl text-brand-text text-sm focus:outline-none" 
+                  />
+                </div>
+              </div>
+
+              <div className="grid sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-brand-muted text-xs font-semibold mb-1">تاريخ المناسبة</label>
+                  <input 
+                    type="date" 
+                    required 
+                    value={editingBooking.event_date || ''} 
+                    onChange={(e) => setEditingBooking({...editingBooking, event_date: e.target.value})} 
+                    className="w-full bg-brand-main border border-brand p-3 rounded-xl text-brand-text text-sm focus:outline-none" 
+                  />
+                </div>
+                <div>
+                  <label className="block text-brand-muted text-xs font-semibold mb-1">مدينة المناسبة</label>
+                  <input 
+                    type="text" 
+                    required 
+                    value={editingBooking.event_city || ''} 
+                    onChange={(e) => setEditingBooking({...editingBooking, event_city: e.target.value})} 
+                    className="w-full bg-brand-main border border-brand p-3 rounded-xl text-brand-text text-sm focus:outline-none" 
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-brand-muted text-xs font-semibold mb-1">ملاحظات العميل</label>
+                <textarea 
+                  rows="3" 
+                  value={editingBooking.notes || ''} 
+                  onChange={(e) => setEditingBooking({...editingBooking, notes: e.target.value})} 
+                  className="w-full bg-brand-main border border-brand p-3 rounded-xl text-brand-text text-sm focus:outline-none resize-none" 
+                />
+              </div>
+
+              <button 
+                type="submit" 
+                disabled={submittingEdit} 
+                className="w-full bg-brand-btn p-3 rounded-xl font-bold text-brand-text shadow-sm transition-all"
+              >
+                {submittingEdit ? 'جاري الحفظ...' : 'حفظ التعديلات'}
+              </button>
+
+              <button 
+                type="button" 
+                onClick={() => setIsEditModalOpen(false)} 
+                className="w-full bg-brand-main border border-brand p-3 rounded-xl font-bold text-brand-muted hover:text-brand-text transition-all"
+              >
+                إلغاء
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
     </AdminLayout>
   );
 }

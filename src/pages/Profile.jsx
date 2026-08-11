@@ -79,7 +79,7 @@ export default function Profile() {
 
       if (profileError) throw profileError;
       
-      showSuccess('تم حفظ بياناتك الشخصية بنجاح ✨');
+      showSuccess('تم حفظ بياناتك الشخصية بنجاح');
     } catch (err) {
       showError(err.message || 'حدث خطأ أثناء حفظ البيانات.');
     } finally {
@@ -106,7 +106,7 @@ export default function Profile() {
       });
 
       if (error) throw error;
-      showSuccess('تم تغيير الدرع الأمني (كلمة المرور) بنجاح 🔐');
+      showSuccess('تم تغيير كلمة المرور بنجاح');
       setPasswordData({ newPassword: '', confirmPassword: '' });
     } catch (err) {
       showError('حدث خطأ أثناء تغيير كلمة المرور.');
@@ -129,8 +129,12 @@ export default function Profile() {
     <Layout>
       <div className="max-w-3xl mx-auto py-10 px-4">
         <div className="text-center mb-10">
-          <span className="text-4xl filter drop-shadow-[0_0_10px_rgba(200,177,160,0.4)]">🛡️</span>
-          <h2 className="text-3xl font-black text-brand-main mt-3">الملف الشخصي للعميل</h2>
+          <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-brand-card border border-brand shadow-sm mb-4">
+            <svg className="w-8 h-8 text-brand-accent" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+            </svg>
+          </div>
+          <h2 className="text-3xl font-black text-brand-main">الملف الشخصي</h2>
           <p className="text-brand-muted text-sm mt-2">إدارة بياناتك الشخصية وحماية حسابك</p>
         </div>
 
@@ -139,7 +143,10 @@ export default function Profile() {
           <div className="bg-brand-card border border-brand rounded-3xl p-6 md:p-8 shadow-2xl backdrop-blur-sm relative overflow-hidden">
             <div className="absolute top-0 left-0 w-full h-1 brand-gradient"></div>
             <h3 className="text-lg font-bold text-brand-main mb-6 flex items-center gap-2">
-              <span className="text-brand-main">📝</span> المعلومات الأساسية
+              <svg className="w-5 h-5 text-brand-accent" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+              </svg>
+              المعلومات الأساسية
             </h3>
             
             <form onSubmit={handleUpdateInfo} className="space-y-4">
@@ -170,7 +177,10 @@ export default function Profile() {
           <div className="bg-brand-card border border-brand rounded-3xl p-6 md:p-8 shadow-2xl backdrop-blur-sm relative overflow-hidden h-fit">
             <div className="absolute top-0 left-0 w-full h-1 brand-gradient"></div>
             <h3 className="text-lg font-bold text-brand-main mb-6 flex items-center gap-2">
-              <span className="text-brand-main">🔐</span> حماية الحساب (تغيير كلمة المرور)
+              <svg className="w-5 h-5 text-brand-accent" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" />
+              </svg>
+              حماية الحساب (تغيير كلمة المرور)
             </h3>
 
             <form onSubmit={handleUpdatePassword} className="space-y-4">

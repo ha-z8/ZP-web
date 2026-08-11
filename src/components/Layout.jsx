@@ -58,7 +58,15 @@ export default function Layout({ children }) {
           <div className="flex items-center gap-3 md:hidden">
             <ThemeToggle />
             <button className="p-2 text-brand-muted" onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}>
-              {isMobileMenuOpen ? <span className="text-2xl">✕</span> : <span className="text-2xl">☰</span>}
+              {isMobileMenuOpen ? (
+                <svg className="w-6 h-6 text-brand-text" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              ) : (
+                <svg className="w-6 h-6 text-brand-text" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
+                </svg>
+              )}
             </button>
           </div>
 
@@ -72,17 +80,47 @@ export default function Layout({ children }) {
             <button onClick={() => navigate('/booking')} className="bg-brand-card hover:bg-brand-btn border border-brand text-brand-text text-xs font-bold px-5 py-2.5 rounded-xl transition-all duration-300 shadow-sm">احـجـز موعــدك الآن</button>
             {user ? (
               <div className="relative">
-                <button onClick={() => setIsProfileMenuOpen(!isProfileMenuOpen)} className="flex items-center gap-2 bg-brand-card border border-brand px-4 py-2 rounded-xl text-xs font-semibold text-brand-text transition-all hover:border-brand-accent shadow-sm"><span>حسابي</span></button>
+                <button onClick={() => setIsProfileMenuOpen(!isProfileMenuOpen)} className="flex items-center gap-2 bg-brand-card border border-brand px-4 py-2 rounded-xl text-xs font-semibold text-brand-text transition-all hover:border-brand-accent shadow-sm">
+                  <span>حسابي</span>
+                  <svg className={`w-3.5 h-3.5 transition-transform ${isProfileMenuOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+                  </svg>
+                </button>
                 {isProfileMenuOpen && (
                   <div className="absolute left-0 mt-2 w-56 bg-brand-card border border-brand rounded-xl shadow-2xl py-1.5 z-50 text-right">
                     <div className="px-4 py-2 border-b border-brand mb-1">
                       <p className="text-[10px] text-brand-muted">مسجـل كــ</p>
                       <p className="text-xs font-medium text-brand-text truncate">{user.email}</p>
                     </div>
-                    <button onClick={() => { setIsProfileMenuOpen(false); navigate('/my-account'); }} className="w-full text-right px-4 py-2 text-xs text-brand-text hover:bg-brand-main">📦 متابعـة طلباتي ورسائلي</button>
-                    <button onClick={() => { setIsProfileMenuOpen(false); navigate('/profile'); }} className="w-full text-right px-4 py-2 text-xs text-brand-text hover:bg-brand-main">⚙️ إعدادات حسابي</button>
-                    <button onClick={() => { setIsProfileMenuOpen(false); navigate('/dashboard'); }} className="w-full text-right px-4 py-2 text-xs text-brand-text hover:bg-brand-main border-t border-brand mt-1">🛡️ لوحــة التحكم الإداريــة</button>
-                    <button onClick={handleLogout} className="w-full text-right px-4 py-2 text-xs text-red-600 hover:bg-brand-main border-t border-brand mt-1">تسجيـل الـخـروج</button>
+                    
+                    <button onClick={() => { setIsProfileMenuOpen(false); navigate('/my-account'); }} className="w-full text-right px-4 py-2 text-xs text-brand-text hover:bg-brand-main flex items-center gap-2">
+                      <svg className="w-4 h-4 text-brand-accent" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+                      </svg>
+                      متابعـة طلباتي ورسائلي
+                    </button>
+
+                    <button onClick={() => { setIsProfileMenuOpen(false); navigate('/profile'); }} className="w-full text-right px-4 py-2 text-xs text-brand-text hover:bg-brand-main flex items-center gap-2">
+                      <svg className="w-4 h-4 text-brand-accent" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                      </svg>
+                      إعدادات حسابي
+                    </button>
+
+                    <button onClick={() => { setIsProfileMenuOpen(false); navigate('/dashboard'); }} className="w-full text-right px-4 py-2 text-xs text-brand-text hover:bg-brand-main border-t border-brand mt-1 flex items-center gap-2">
+                      <svg className="w-4 h-4 text-brand-accent" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                      </svg>
+                      لوحــة التحكم الإداريــة
+                    </button>
+
+                    <button onClick={handleLogout} className="w-full text-right px-4 py-2 text-xs text-red-600 hover:bg-brand-main border-t border-brand mt-1 flex items-center gap-2">
+                      <svg className="w-4 h-4 text-red-600" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                      </svg>
+                      تسجيـل الـخـروج
+                    </button>
                   </div>
                 )}
               </div>
@@ -99,10 +137,22 @@ export default function Layout({ children }) {
             <button onClick={() => {navigate('/booking'); setIsMobileMenuOpen(false)}} className="w-full text-right py-2 text-brand-text font-bold">احـجـز موعــدك الآن</button>
             {user ? (
               <div className="border-t border-brand pt-3 mt-3 space-y-2">
-                <button onClick={() => {navigate('/my-account'); setIsMobileMenuOpen(false)}} className="w-full text-right py-2 text-brand-text">📦 متابعـة طلباتي ورسائلي</button>
-                <button onClick={() => {navigate('/profile'); setIsMobileMenuOpen(false)}} className="w-full text-right py-2 text-brand-text">⚙️ إعدادات حسابي</button>
-                <button onClick={() => {navigate('/dashboard'); setIsMobileMenuOpen(false)}} className="w-full text-right py-2 text-brand-text">🛡️ لوحــة التحكم الإداريــة</button>
-                <button onClick={handleLogout} className="w-full text-right py-2 text-red-600">تسجيل الخروج</button>
+                <button onClick={() => {navigate('/my-account'); setIsMobileMenuOpen(false)}} className="w-full text-right py-2 text-brand-text flex items-center gap-2">
+                  <svg className="w-4 h-4 text-brand-accent" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" /></svg>
+                  متابعـة طلباتي ورسائلي
+                </button>
+                <button onClick={() => {navigate('/profile'); setIsMobileMenuOpen(false)}} className="w-full text-right py-2 text-brand-text flex items-center gap-2">
+                  <svg className="w-4 h-4 text-brand-accent" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" /></svg>
+                  إعدادات حسابي
+                </button>
+                <button onClick={() => {navigate('/dashboard'); setIsMobileMenuOpen(false)}} className="w-full text-right py-2 text-brand-text flex items-center gap-2">
+                  <svg className="w-4 h-4 text-brand-accent" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" /></svg>
+                  لوحــة التحكم الإداريــة
+                </button>
+                <button onClick={handleLogout} className="w-full text-right py-2 text-red-600 flex items-center gap-2">
+                  <svg className="w-4 h-4 text-red-600" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" /></svg>
+                  تسجيل الخروج
+                </button>
               </div>
             ) : (
               <button onClick={() => {navigate('/login'); setIsMobileMenuOpen(false)}} className="w-full text-right py-2 text-brand-text font-bold">تسـجـيـل الـدخـول</button>
@@ -128,10 +178,10 @@ export default function Layout({ children }) {
               <p className="text-brand-muted text-sm leading-6 max-w-sm">نصيغ حكاياتكم العاطفية والجميلة بعدسات سينمائية فاخرة لتظل ذكريات ليلة العمر حية، نابضة بالتفاصيل والمشاعر مدى الحياة.</p>
             </div>
             <div>
-              <h4 className="text-brand-text font-bold text-sm mb-4">روابـط النـظـام</h4>
+              <h4 className="text-brand-text font-bold text-sm mb-4">روابـط تهمــك</h4>
               <ul className="space-y-2.5 text-xs text-brand-muted">
                 <li><button onClick={() => navigate('/')} className="hover:text-brand-text transition-colors">الصفحـة الرئيسيـة</button></li>
-                <li><button onClick={() => navigate('/booking')} className="hover:text-brand-text transition-colors">طلب حجز فوري</button></li>
+                <li><button onClick={() => navigate('/policies')} className="hover:text-brand-text transition-colors">السياسات والشروط والأحكام</button></li>
                 <li><button onClick={scrollToContact} className="hover:text-brand-text transition-colors">تقديم استفسار للإدارة</button></li>
               </ul>
             </div>
