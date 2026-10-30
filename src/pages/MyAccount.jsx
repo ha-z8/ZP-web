@@ -136,7 +136,7 @@ export default function MyAccount() {
                           <p className="sm:col-span-2">تاريخ ووقت إصدار الرابط: <strong className="text-brand-text">{p.created_at ? new Intl.DateTimeFormat('ar-SA',{dateStyle:'medium',timeStyle:'short',timeZone:'Asia/Riyadh'}).format(new Date(p.created_at)) : 'غير متوفر'} (بتوقيت الرياض)</strong></p>
                         </div>
                         <p className="text-sm text-brand-muted my-2">{p.status === 'paid' ? 'تم توثيق السداد' : 'لم يتم تأكيد السداد بعد'}</p>
-                        {p.payment_url && p.status === 'link_created' && <a href={p.payment_url} target="_blank" rel="noopener noreferrer" className="inline-block bg-brand-btn px-5 py-2 rounded-lg font-bold">الدفع الآن عبر EdfaPay</a>}
+                        {p.payment_url && p.status === 'link_created' && <a href={p.payment_url} target="_blank" rel="noopener noreferrer" className="inline-block bg-brand-btn px-5 py-2 rounded-lg font-bold">الدفع الآن</a>}
                       </div>
                     ))}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 bg-brand-main p-6 rounded-xl border border-brand">
