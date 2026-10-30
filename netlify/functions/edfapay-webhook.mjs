@@ -42,7 +42,7 @@ export async function handler(event) {
     }
     // Independently confirm the transaction with EdfaPay before altering financial records.
     if (!process.env.EDFAPAY_API_KEY) return reply(503, 'Verification key not configured');
-    const gateway = (process.env.EDFAPAY_BASE_URL || 'https://app-api.edfapay.com').replace(/\\/$/, '');
+    const gateway = (process.env.EDFAPAY_BASE_URL || 'https://app-api.edfapay.com').replace(/\/$/, '');
     const verificationUrl = gateway + '/api/v1/transactions/filterTransaction?id=' + encodeURIComponent(tx);
     const verification = await fetch(verificationUrl, {
       headers: { 'X-API-KEY': process.env.EDFAPAY_API_KEY, Accept: 'application/json' }
