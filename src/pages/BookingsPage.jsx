@@ -5,6 +5,9 @@ import AdminLayout from '../components/AdminLayout';
 
 export default function BookingsPage() {
   const [bookings, setBookings] = useState([]);
+  const [paymentRequests, setPaymentRequests] = useState([]);
+  const [paymentAmounts, setPaymentAmounts] = useState({});
+  const [creatingPaymentFor, setCreatingPaymentFor] = useState(null);
   const [packages, setPackages] = useState([]); // قائمة الباقات الفعلية
   const [searchQuery, setSearchQuery] = useState(''); 
   const [copiedId, setCopiedId] = useState(null);
@@ -62,6 +65,8 @@ export default function BookingsPage() {
       setBookings(bookingsData);
     }
 
+    const { data: payments, error: paymentError } = await supabase.from('booking_payment_requests').select('id,booking_id,amount,currency,payment_url,status,created_at').order('created_at', { ascending: false });
+    if (!paymentError) setPaymentRequests(payments || []);
     if (pkgsData) {
       setPackages(pkgsData);
     }
@@ -69,6 +74,34 @@ export default function BookingsPage() {
     setTimeout(() => {
       setIsRefreshing(false);
     }, 500);
+  };
+
+  const handleCreatePayment = async (booking) => {
+    const amount = Number(paymentAmounts[booking.id]);
+    if (!Number.isFinite(amount) || amount < 1 || amount > 1000000 || Math.round(amount * 100) !== amount * 100) {
+      showError('أدخل مبلغاً صحيحاً لا يقل عن ريال واحد');
+      return;
+    }
+    if (!await confirmAction('إنشاء رابط دفع', `إصدار مطالبة دفع بقيمة ${amount.toFixed(2)} ريال للحجز ${booking.booking_code}؟`, 'إنشاء الرابط')) return;
+    setCreatingPaymentFor(booking.id);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) throw new Error('يجب تسجيل الدخول');
+      const response = await fetch('/.netlify/functions/create-booking-payment', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session.access_token}` },
+        body: JSON.stringify({ bookingId: booking.id, amount })
+      });
+      const result = await response.json();
+      if (!response.ok) throw new Error(result.error || 'فشل إصدار الرابط');
+      await fetchData();
+      await navigator.clipboard.writeText(result.paymentUrl);
+      showSuccess('تم إنشاء رابط الدفع ونسخه. يمكنك إرساله للعميل.');
+    } catch (error) {
+      showError(error.message || 'تعذر إنشاء الرابط');
+    } finally {
+      setCreatingPaymentFor(null);
+    }
   };
 
   const handleUpdateStatus = async (id, status) => {
@@ -234,6 +267,22 @@ export default function BookingsPage() {
                           <CopyableText label="الهاتف" text={b.customer_phone} id={`${b.id}-phone`} />
                           <CopyableText label="البريد" text={b.customer_email || 'غير متوفر'} id={`${b.id}-email`} />
                           <CopyableText label="التاريخ والمناسبة" text={`${b.event_date} - ${b.event_city}`} id={`${b.id}-date`} />
+                        </div>
+
+                        <div className="mt-5 p-4 bg-brand-main rounded-xl border border-brand space-y-3">
+                          <h4 className="font-bold text-brand-text text-sm">طلب دفع عبر EdfaPay</h4>
+                          <p className="text-xs text-brand-muted">حدد المبلغ المستحق. يظهر رابط الدفع في حساب العميل بعد إنشائه ويمكن نسخه لإرساله خارج الموقع.</p>
+                          <div className="flex flex-wrap gap-2 items-center">
+                            <input type="number" min="1" max="1000000" step="0.01" value={paymentAmounts[b.id] ?? ''} onChange={e => setPaymentAmounts(a => ({...a, [b.id]: e.target.value}))} placeholder="المبلغ بالريال" aria-label="المبلغ بالريال السعودي" className="bg-brand-card border border-brand rounded-lg p-2 text-brand-text w-44 text-sm" />
+                            <button disabled={creatingPaymentFor === b.id || b.status === 'ملغي'} onClick={() => handleCreatePayment(b)} className="bg-brand-btn border border-brand rounded-lg px-4 py-2 text-sm font-bold disabled:opacity-50">{creatingPaymentFor === b.id ? 'جاري الإنشاء...' : 'إنشاء رابط دفع'}</button>
+                          </div>
+                          {paymentRequests.filter(p => p.booking_id === b.id).map(p => (
+                            <div key={p.id} className="flex gap-3 items-center flex-wrap text-xs border-t border-brand pt-3">
+                              <span className="text-brand-text">{Number(p.amount).toFixed(2)} ر.س — {p.status === 'paid' ? 'مدفوع (متحقق)' : p.status === 'link_created' ? 'الرابط جاهز — لم يؤكد الدفع' : p.status}</span>
+                              {p.payment_url && <button onClick={() => copyToClipboard(p.payment_url, p.id)} className="underline text-brand-accent">{copiedId === p.id ? 'تم النسخ' : 'نسخ الرابط'}</button>}
+                              {p.payment_url && <a href={p.payment_url} target="_blank" rel="noopener noreferrer" className="underline text-brand-accent">فتح صفحة الدفع</a>}
+                            </div>
+                          ))}
                         </div>
 
                         {b.notes && (

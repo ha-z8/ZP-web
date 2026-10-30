@@ -5,6 +5,7 @@ import Layout from '../components/Layout';
 export default function MyAccount() {
   const [data, setData] = useState({ bookings: [], messages: [] });
   const [loading, setLoading] = useState(true);
+  const [payments, setPayments] = useState([]);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [copiedId, setCopiedId] = useState(null);
 
@@ -36,6 +37,11 @@ export default function MyAccount() {
       supabase.from('expenses').select('*').eq('user_id', user.id).order('created_at', { ascending: false })
     ]);
     setData({ bookings: bookingsRes.data || [], messages: messagesRes.data || [] });
+    const ids = (bookingsRes.data || []).map(b => b.id);
+    if (ids.length) {
+      const { data: links, error } = await supabase.from('booking_payment_requests').select('id,booking_id,amount,currency,payment_url,status,created_at').in('booking_id', ids).order('created_at', { ascending: false });
+      if (!error) setPayments(links || []);
+    } else setPayments([]);
   }, []);
 
   useEffect(() => {
@@ -103,6 +109,13 @@ export default function MyAccount() {
                       </div>
                       <span className={`px-4 py-2 rounded-xl text-xs font-bold border ${getStatusStyle(b.status)}`}>{b.status}</span>
                     </div>
+                    {payments.filter(p => p.booking_id === b.id).map(p => (
+                      <div key={p.id} className="bg-brand-main border border-brand p-4 rounded-xl my-4">
+                        <p className="font-bold text-brand-text">طلب دفع: {Number(p.amount).toFixed(2)} ريال سعودي</p>
+                        <p className="text-sm text-brand-muted my-2">{p.status === 'paid' ? 'تم توثيق السداد' : 'لم يتم تأكيد السداد بعد'}</p>
+                        {p.payment_url && p.status !== 'paid' && <a href={p.payment_url} target="_blank" rel="noopener noreferrer" className="inline-block bg-brand-btn px-5 py-2 rounded-lg font-bold">الدفع الآن عبر EdfaPay</a>}
+                      </div>
+                    ))}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 bg-brand-main p-6 rounded-xl border border-brand">
                        {[ {l:'المدينة', v:b.event_city}, {l:'التاريخ', v:b.event_date}, {l:'العميل', v:b.customer_name}, {l:'الهاتف', v:b.customer_phone} ].map(i => (
                           <div key={i.l} className="flex justify-between border-b border-brand pb-2">
