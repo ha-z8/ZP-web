@@ -67,7 +67,7 @@ export default function BookingsPage() {
       setBookings(bookingsData);
     }
 
-    const { data: payments, error: paymentError } = await supabase.from('booking_payment_requests').select('id,booking_id,amount,currency,payment_url,status,created_at').order('created_at', { ascending: false });
+    const { data: payments, error: paymentError } = await supabase.from('booking_payment_requests').select('id,booking_id,order_id,amount,currency,payment_url,status,created_at').order('created_at', { ascending: false });
     if (!paymentError) setPaymentRequests(payments || []);
     if (pkgsData) {
       setPackages(pkgsData);
@@ -280,7 +280,7 @@ export default function BookingsPage() {
                           </div>
                           {paymentRequests.filter(p => p.booking_id === b.id).map(p => (
                             <div key={p.id} className="flex gap-3 items-center flex-wrap text-xs border-t border-brand pt-3">
-                              <span className="text-brand-text">{Number(p.amount).toFixed(2)} ر.س — {p.status === 'paid' ? 'مدفوع (متحقق)' : p.status === 'link_created' ? 'الرابط جاهز — لم يؤكد الدفع' : p.status}</span>
+                              <div className="text-brand-muted"><p>رقم الحجز: <strong dir="ltr">{b.booking_code}</strong></p><p>رقم الدفع: <strong dir="ltr">{p.order_id}</strong></p><p>إصدار الرابط: {p.created_at ? new Intl.DateTimeFormat('ar-SA',{dateStyle:'medium',timeStyle:'short',timeZone:'Asia/Riyadh'}).format(new Date(p.created_at)) : '—'} (الرياض)</p></div><span className="text-brand-text">{Number(p.amount).toFixed(2)} ر.س — {p.status === 'paid' ? 'مدفوع (متحقق)' : p.status === 'link_created' ? 'الرابط جاهز — لم يؤكد الدفع' : p.status}</span>
                               {p.payment_url && <button onClick={() => copyToClipboard(p.payment_url, p.id)} className="underline text-brand-accent">{copiedId === p.id ? 'تم النسخ' : 'نسخ الرابط'}</button>}
                               {p.payment_url && <a href={p.payment_url} target="_blank" rel="noopener noreferrer" className="underline text-brand-accent">فتح صفحة الدفع</a>}
                             </div>
