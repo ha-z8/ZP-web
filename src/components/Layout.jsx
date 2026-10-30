@@ -2,7 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { supabase } from '../supabase';
 import ThemeToggle from './ThemeToggle';
-import zLogo from '../assets/z-logo.png'; 
+import zLogo from '../assets/z-logo.png';
+import { Instagram, Ghost, MessageCircle } from 'lucide-react'; 
 
 export default function Layout({ children }) {
   const navigate = useNavigate();
@@ -188,14 +189,14 @@ export default function Layout({ children }) {
             <div>
               <h4 className="text-brand-text font-bold text-sm mb-4">حسابـات التواصـل الاجتماعـي</h4>
               <div className="flex gap-4 justify-start">
-                <a href="https://www.instagram.com/zobaidh_photographer/" target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-lg bg-brand-main border border-brand flex items-center justify-center hover:border-brand-accent transition-all">
-                  <img src="https://api.iconify.design/mdi:instagram.svg?color=%238c7a6b" className="w-5 h-5 object-contain" alt="Instagram" />
+                <a href="https://www.instagram.com/zobaidh_photographer/" aria-label="إنستغرام" title="إنستغرام" target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-lg bg-brand-main border border-brand flex items-center justify-center hover:border-brand-accent transition-all">
+                  <Instagram className="w-5 h-5 text-brand-main" aria-hidden="true" />
                 </a>
-                <a href="https://www.snapchat.com/@zobaidh_photo" target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-lg bg-brand-main border border-brand flex items-center justify-center hover:border-brand-accent transition-all">
-                  <img src="https://api.iconify.design/ri:snapchat-line.svg?color=%238c7a6b" className="w-5 h-5 object-contain" alt="Snapchat" />
+                <a href="https://www.snapchat.com/@zobaidh_photo" aria-label="سناب شات" title="سناب شات" target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-lg bg-brand-main border border-brand flex items-center justify-center hover:border-brand-accent transition-all">
+                  <Ghost className="w-5 h-5 text-brand-main" aria-hidden="true" />
                 </a>
-                <a href="https://api.whatsapp.com/send?phone=966554491860" target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-lg bg-brand-main border border-brand flex items-center justify-center hover:border-brand-accent transition-all">
-                  <img src="https://api.iconify.design/mdi:whatsapp.svg?color=%238c7a6b" className="w-5 h-5 object-contain" alt="WhatsApp" />
+                <a href="https://wa.me/966554491860" aria-label="واتساب" title="واتساب" target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-lg bg-brand-main border border-brand flex items-center justify-center hover:border-brand-accent transition-all">
+                  <MessageCircle className="w-5 h-5 text-brand-main" aria-hidden="true" />
                 </a>
               </div>
             </div>
