@@ -1,7 +1,7 @@
 import { createClient } from '@supabase/supabase-js';
 
 const json = (statusCode, body) => ({ statusCode, headers: { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store' }, body: JSON.stringify(body) });
-const validAmount = (value) => typeof value === 'number' && Number.isFinite(value) && value >= 1 && value <= 1000000 && Math.round(value * 100) === value * 100;
+const validAmount = (value) => typeof value === 'number' && Number.isFinite(value) && value >= 1 && value <= 1000000 && Math.abs(Math.round(value * 100) - value * 100) < 0.000001;
 
 export async function handler(event) {
   if (event.httpMethod !== 'POST') return json(405, { error: 'Method not allowed' });
