@@ -10,6 +10,7 @@ export default function PaymentRequestModal({ customer, onClose }) {
   const [custom, setCustom] = useState('');
   const [loading, setLoading] = useState(false);
   const [link, setLink] = useState('');
+  const [createdOrderId, setCreatedOrderId] = useState('');
 
   useEffect(() => {
     let current = true;
@@ -29,7 +30,7 @@ export default function PaymentRequestModal({ customer, onClose }) {
     let current = true;
     setLink('');
     setPayments([]);
-    if (bookingId) supabase.from('booking_payment_requests').select('amount,status,payment_url,created_at').eq('booking_id',bookingId).order('created_at',{ascending:false}).then(({data,error}) => {
+    if (bookingId) supabase.from('booking_payment_requests').select('order_id,amount,status,payment_url,created_at').eq('booking_id',bookingId).order('created_at',{ascending:false}).then(({data,error}) => {
       if (!current) return;
       if (error) showError('تعذر قراءة طلبات الدفع');
       else setPayments(data || []);
@@ -55,6 +56,7 @@ export default function PaymentRequestModal({ customer, onClose }) {
       const result = await response.json();
       if (!response.ok) throw new Error(result.error || 'تعذر إنشاء الرابط');
       setLink(result.paymentUrl);
+      setCreatedOrderId(result.orderId || '');
       const {data} = await supabase.from('booking_payment_requests').select('amount,status,payment_url,created_at').eq('booking_id',bookingId).order('created_at',{ascending:false});
       setPayments(data || []);
       showSuccess('رابط الدفع جاهز ويمكن نسخه أو مشاركته');
@@ -87,7 +89,10 @@ export default function PaymentRequestModal({ customer, onClose }) {
           </select>
         </label>
         {mode==='custom' && <input type="number" min="1" step="0.01" value={custom} onChange={e=>setCustom(e.target.value)} placeholder="المبلغ بالريال" className="w-full p-3 bg-brand-main border border-brand rounded-lg" />}
+        <p className="text-xs text-brand-muted">رقم الحجز: <strong dir="ltr" className="text-brand-text">{selected.booking_code}</strong></p>
         <p className="font-bold text-brand-main">المبلغ المطلوب: {Number.isFinite(amount)?amount.toFixed(2):'—'} ريال</p>
+        {(createdOrderId || active?.order_id) && <p className="text-xs text-brand-muted break-all">رقم عملية الدفع: <span dir="ltr">{createdOrderId || active.order_id}</span></p>}
+        {active?.created_at && <p className="text-xs text-brand-muted">تاريخ إصدار الرابط: {new Intl.DateTimeFormat('ar-SA',{dateStyle:'medium',timeStyle:'short',timeZone:'Asia/Riyadh'}).format(new Date(active.created_at))} — توقيت الرياض</p>}
         {active && <p className="text-sm text-amber-600">توجد مطالبة نشطة لهذا الحجز. لا تنشئ مطالبة أخرى حتى تتم تسويتها.</p>}
         <button disabled={loading||!!active||remaining===0} onClick={create} className="w-full bg-brand-btn py-3 rounded-xl font-bold disabled:opacity-50">{loading?'جارٍ إنشاء الرابط...':'إنشاء رابط دفع'}</button>
         {(link||active?.payment_url)&&<div className="flex flex-wrap gap-2">
