@@ -39,7 +39,7 @@ export default function MyAccount() {
     setData({ bookings: bookingsRes.data || [], messages: messagesRes.data || [] });
     const ids = (bookingsRes.data || []).map(b => b.id);
     if (ids.length) {
-      const { data: links, error } = await supabase.from('booking_payment_requests').select('id,booking_id,amount,currency,payment_url,status,created_at').in('booking_id', ids).order('created_at', { ascending: false });
+      const { data: links, error } = await supabase.from('booking_payment_requests').select('id,booking_id,order_id,amount,currency,payment_url,status,created_at').in('booking_id', ids).order('created_at', { ascending: false });
       if (!error) setPayments(links || []);
     } else setPayments([]);
   }, []);
@@ -130,6 +130,11 @@ export default function MyAccount() {
                     {payments.filter(p => p.booking_id === b.id).map(p => (
                       <div key={p.id} className="bg-brand-main border border-brand p-4 rounded-xl my-4">
                         <p className="font-bold text-brand-text">طلب دفع: {Number(p.amount).toFixed(2)} ريال سعودي</p>
+                        <div className="grid sm:grid-cols-2 gap-2 my-3 text-xs text-brand-muted">
+                          <p>رقم الحجز: <strong dir="ltr" className="text-brand-text">{b.booking_code}</strong></p>
+                          <p>رقم معاملة الدفع: <strong dir="ltr" className="text-brand-text break-all">{p.order_id}</strong></p>
+                          <p className="sm:col-span-2">تاريخ ووقت إصدار الرابط: <strong className="text-brand-text">{p.created_at ? new Intl.DateTimeFormat('ar-SA',{dateStyle:'medium',timeStyle:'short',timeZone:'Asia/Riyadh'}).format(new Date(p.created_at)) : 'غير متوفر'} (بتوقيت الرياض)</strong></p>
+                        </div>
                         <p className="text-sm text-brand-muted my-2">{p.status === 'paid' ? 'تم توثيق السداد' : 'لم يتم تأكيد السداد بعد'}</p>
                         {p.payment_url && p.status === 'link_created' && <a href={p.payment_url} target="_blank" rel="noopener noreferrer" className="inline-block bg-brand-btn px-5 py-2 rounded-lg font-bold">الدفع الآن عبر EdfaPay</a>}
                       </div>
