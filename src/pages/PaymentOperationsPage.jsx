@@ -15,6 +15,9 @@ export default function PaymentOperationsPage(){
  const [loading,setLoading]=useState(true);
  const [filter,setFilter]=useState('all');
  const [showArchived,setShowArchived]=useState(false);
+ const [dateFrom,setDateFrom]=useState('');
+ const [dateTo,setDateTo]=useState('');
+ const [sortMode,setSortMode]=useState('newest');
  const [search,setSearch]=useState('');
  const [selected,setSelected]=useState(null);
  const [busy,setBusy]=useState(null);
@@ -53,9 +56,11 @@ export default function PaymentOperationsPage(){
   if(filter==='hidden'&&!p.hidden_at)return false;
   if(filter==='visible'&&p.hidden_at)return false;
   if(!['all','hidden','visible','archived'].includes(filter)&&p.status!==filter)return false;
+  if(dateFrom&&new Date(p.created_at)<new Date(dateFrom+'T00:00:00+03:00'))return false;
+  if(dateTo&&new Date(p.created_at)>new Date(dateTo+'T23:59:59+03:00'))return false;
   const b=p.booking||{};
   return [p.order_id,p.transaction_id,b.booking_code,b.customer_name,b.customer_email,b.customer_phone].some(x=>String(x||'').toLowerCase().includes(search.toLowerCase()));
- }),[rows,filter,search,showArchived]);
+ }).sort((a,b)=>sortMode==='amount_high'?Number(b.amount)-Number(a.amount):sortMode==='amount_low'?Number(a.amount)-Number(b.amount):sortMode==='oldest'?new Date(a.created_at)-new Date(b.created_at):new Date(b.created_at)-new Date(a.created_at)),[rows,filter,search,showArchived,dateFrom,dateTo,sortMode]);
  const copy=async value=>{try{await navigator.clipboard.writeText(value);showSuccess('تم النسخ')}catch{showError('تعذر النسخ')}};
  const share=(p)=>{
   const b=p.booking||{};
@@ -91,6 +96,13 @@ export default function PaymentOperationsPage(){
   <label className="flex items-center gap-2 text-xs text-brand-text"><input type="checkbox" checked={showArchived} onChange={e=>setShowArchived(e.target.checked)}/>عرض الروابط المؤرشفة في القوائم</label>
   <p className="text-xs text-brand-muted">الأرقام مبنية على المدفوعات التي أكدها نظام الموقع فقط، وليست كشف تسوية بنكية من مزود الدفع. لا يُسمح بحذف أي عملية مالية مسددة.</p>
   <div className="bg-brand-card border border-brand rounded-2xl p-4 grid sm:grid-cols-[1fr_auto] gap-3"><input value={search} onChange={e=>setSearch(e.target.value)} placeholder="بحث برقم الحجز أو الدفع أو اسم العميل أو الجوال" className="bg-brand-main border border-brand rounded-lg p-3 text-brand-text w-full"/><select value={filter} onChange={e=>setFilter(e.target.value)} className="bg-brand-main border border-brand rounded-lg p-3 text-brand-text"><option value="all">كل العمليات</option><option value="paid">المدفوعة</option><option value="link_created">الروابط الجاهزة</option><option value="pending">قيد الإنشاء</option><option value="failed">الفاشلة</option><option value="hidden">المخفية</option><option value="archived">المؤرشفة</option><option value="visible">الظاهرة</option></select></div>
+  <div className="bg-brand-card border border-brand rounded-2xl p-4 flex flex-wrap gap-3 items-end">
+    <label className="text-xs text-brand-muted">من تاريخ<input type="date" value={dateFrom} onChange={e=>setDateFrom(e.target.value)} className="block mt-1 bg-brand-main text-brand-text border border-brand rounded-lg p-2"/></label>
+    <label className="text-xs text-brand-muted">إلى تاريخ<input type="date" value={dateTo} onChange={e=>setDateTo(e.target.value)} className="block mt-1 bg-brand-main text-brand-text border border-brand rounded-lg p-2"/></label>
+    <label className="text-xs text-brand-muted">ترتيب العمليات<select value={sortMode} onChange={e=>setSortMode(e.target.value)} className="block mt-1 bg-brand-main text-brand-text border border-brand rounded-lg p-2"><option value="newest">الأحدث</option><option value="oldest">الأقدم</option><option value="amount_high">المبلغ الأعلى</option><option value="amount_low">المبلغ الأقل</option></select></label>
+    <button onClick={()=>{setDateFrom('');setDateTo('');setSearch('');setFilter('all');setShowArchived(false);setSortMode('newest')}} className="border border-brand rounded-lg px-4 py-2 text-xs">إعادة ضبط الفلاتر</button>
+    <div className="mr-auto text-sm text-brand-text font-bold">النتائج: {filtered.length} — إجمالي مبالغ النتائج: {money(visibleTotal)}</div>
+  </div>
   {error&&<p className="text-red-600 text-sm" role="alert">{error}</p>}
   {loading?<p className="text-brand-muted">جاري تحميل العمليات...</p>:<div className="space-y-3">{filtered.map(p=><article key={p.id} className="bg-brand-card border border-brand rounded-2xl p-4 flex flex-col md:flex-row gap-4 md:items-center justify-between">
    <div className="space-y-1 min-w-0"><h3 className="font-bold text-brand-text">{p.booking?.customer_name||'حجز غير معروف'} <span className="text-xs text-brand-muted">— {p.booking?.booking_code}</span></h3><p className="text-xs text-brand-muted break-all" dir="ltr">{p.order_id}</p><p className="text-sm">{money(p.amount)} — {labels[p.status]||p.status} {p.archived_at?'— مؤرشف':p.hidden_at?'— مخفي عن العميل':''}</p><p className="text-xs text-brand-muted">{date(p.created_at)} (الرياض)</p></div>
@@ -99,6 +111,7 @@ export default function PaymentOperationsPage(){
   <section className="bg-brand-card border border-brand rounded-2xl p-5"><h2 className="font-bold text-brand-main mb-3">سجل إجراءات الإدارة</h2>{audit.length===0?<p className="text-xs text-brand-muted">لا توجد إجراءات مسجلة.</p>:<div className="space-y-2">{audit.slice(0,25).map(a=><div key={a.id} className="text-xs border-b border-brand py-2 text-brand-muted">{a.action==='hide_link'?'إخفاء رابط':a.action==='archive_link'?'إزالة رابط':a.action==='unarchive_link'?'استعادة من الأرشيف':'استعادة رابط'} — {date(a.created_at)} — {a.payment_request_id}</div>)}</div>}</section>
   {selected&&<div role="dialog" aria-modal="true" aria-label="إدارة معاملة الدفع" className="fixed inset-0 bg-black/70 z-[80] flex items-center justify-center p-3" dir="rtl"><div className="bg-brand-card border border-brand rounded-3xl p-6 w-full max-w-lg max-h-[90vh] overflow-y-auto space-y-3 shadow-2xl"><div className="flex justify-between"><h2 className="text-xl font-black">تفاصيل عملية الدفع</h2><button onClick={()=>setSelected(null)} className="border border-brand rounded-lg px-3 py-1">إغلاق</button></div>
   {[['رقم الحجز',selected.booking?.booking_code],['رقم معاملة مزود الدفع',selected.order_id],['اسم العميل',selected.booking?.customer_name],['المبلغ',money(selected.amount)],['الحالة',labels[selected.status]||selected.status],['إصدار الرابط',date(selected.created_at)],['تاريخ السداد',date(selected.paid_at)],['رقم العملية لدى البوابة',selected.transaction_id||'—'],['ظهور الرابط',selected.archived_at?'مؤرشف':selected.hidden_at?'مخفي':'ظاهر']].map(([k,v])=><div className="flex justify-between gap-3 text-sm border-b border-brand py-2" key={k}><span className="text-brand-muted shrink-0">{k}</span><span className="text-brand-text break-all text-left">{v}</span></div>)}
+  {selected.booking?.customer_phone&&<button onClick={()=>copy(selected.booking.customer_phone)} className="border border-brand rounded-lg px-4 py-2 text-xs">نسخ جوال العميل</button>}
   {selected.payment_url&&<div className="grid grid-cols-2 gap-2"><button onClick={()=>copy(selected.payment_url)} className="border border-brand rounded-lg py-2 text-sm">نسخ الرابط</button><button onClick={()=>share(selected)} className="border border-brand rounded-lg py-2 text-sm">إرسال عبر واتساب</button><a href={selected.payment_url} target="_blank" rel="noopener noreferrer" className="text-center border border-brand rounded-lg py-2 text-sm">فتح الرابط</a><button onClick={()=>copy(selected.order_id)} className="border border-brand rounded-lg py-2 text-sm">نسخ رقم العملية</button></div>}
   {selected.status!=='paid'&&<button disabled={busy===selected.id} onClick={()=>change(selected,selected.archived_at?'unarchive_link':'archive_link')} className="w-full bg-brand-btn rounded-xl p-3 font-bold">{selected.archived_at?'استعادة الرابط من الأرشيف':'إزالة الرابط من قائمة الموقع'}</button>}
   {selected.status!=='paid'&&!selected.archived_at&&<button disabled={busy===selected.id} onClick={()=>change(selected,selected.hidden_at?'restore_link':'hide_link')} className="w-full border border-brand rounded-xl p-3 font-bold">{selected.hidden_at?'استعادة إظهار الرابط':'إخفاء الرابط عن العميل'}</button>}
