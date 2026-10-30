@@ -18,6 +18,7 @@ export default function PaymentOperationsPage(){
  const [dateFrom,setDateFrom]=useState('');
  const [dateTo,setDateTo]=useState('');
  const [sortMode,setSortMode]=useState('newest');
+ const [onlyOutstanding,setOnlyOutstanding]=useState(false);
  const [search,setSearch]=useState('');
  const [selected,setSelected]=useState(null);
  const [busy,setBusy]=useState(null);
@@ -52,6 +53,7 @@ export default function PaymentOperationsPage(){
  },[payments,bookings]);
  const filtered=useMemo(()=>rows.filter(p=>{
   if(!showArchived&&p.archived_at)return false;
+  if(onlyOutstanding&&p.status==='paid')return false;
   if(filter==='archived'&&!p.archived_at)return false;
   if(filter==='hidden'&&!p.hidden_at)return false;
   if(filter==='visible'&&p.hidden_at)return false;
@@ -60,7 +62,7 @@ export default function PaymentOperationsPage(){
   if(dateTo&&new Date(p.created_at)>new Date(dateTo+'T23:59:59+03:00'))return false;
   const b=p.booking||{};
   return [p.order_id,p.transaction_id,b.booking_code,b.customer_name,b.customer_email,b.customer_phone].some(x=>String(x||'').toLowerCase().includes(search.toLowerCase()));
- }).sort((a,b)=>sortMode==='amount_high'?Number(b.amount)-Number(a.amount):sortMode==='amount_low'?Number(a.amount)-Number(b.amount):sortMode==='oldest'?new Date(a.created_at)-new Date(b.created_at):new Date(b.created_at)-new Date(a.created_at)),[rows,filter,search,showArchived,dateFrom,dateTo,sortMode]);
+ }).sort((a,b)=>sortMode==='amount_high'?Number(b.amount)-Number(a.amount):sortMode==='amount_low'?Number(a.amount)-Number(b.amount):sortMode==='oldest'?new Date(a.created_at)-new Date(b.created_at):new Date(b.created_at)-new Date(a.created_at)),[rows,filter,search,showArchived,dateFrom,dateTo,sortMode,onlyOutstanding]);
  const copy=async value=>{try{await navigator.clipboard.writeText(value);showSuccess('تم النسخ')}catch{showError('تعذر النسخ')}};
  const share=(p)=>{
   const b=p.booking||{};
@@ -100,7 +102,8 @@ export default function PaymentOperationsPage(){
     <label className="text-xs text-brand-muted">من تاريخ<input type="date" value={dateFrom} onChange={e=>setDateFrom(e.target.value)} className="block mt-1 bg-brand-main text-brand-text border border-brand rounded-lg p-2"/></label>
     <label className="text-xs text-brand-muted">إلى تاريخ<input type="date" value={dateTo} onChange={e=>setDateTo(e.target.value)} className="block mt-1 bg-brand-main text-brand-text border border-brand rounded-lg p-2"/></label>
     <label className="text-xs text-brand-muted">ترتيب العمليات<select value={sortMode} onChange={e=>setSortMode(e.target.value)} className="block mt-1 bg-brand-main text-brand-text border border-brand rounded-lg p-2"><option value="newest">الأحدث</option><option value="oldest">الأقدم</option><option value="amount_high">المبلغ الأعلى</option><option value="amount_low">المبلغ الأقل</option></select></label>
-    <button onClick={()=>{setDateFrom('');setDateTo('');setSearch('');setFilter('all');setShowArchived(false);setSortMode('newest')}} className="border border-brand rounded-lg px-4 py-2 text-xs">إعادة ضبط الفلاتر</button>
+    <label className="flex items-center gap-2 text-xs text-brand-text"><input type="checkbox" checked={onlyOutstanding} onChange={e=>setOnlyOutstanding(e.target.checked)}/>العمليات غير المدفوعة فقط</label>
+    <button onClick={()=>{setOnlyOutstanding(false);setDateFrom('');setDateTo('');setSearch('');setFilter('all');setShowArchived(false);setSortMode('newest')}} className="border border-brand rounded-lg px-4 py-2 text-xs">إعادة ضبط الفلاتر</button>
     <div className="mr-auto text-sm text-brand-text font-bold">النتائج: {filtered.length} — إجمالي مبالغ النتائج: {money(visibleTotal)}</div>
   </div>
   {error&&<p className="text-red-600 text-sm" role="alert">{error}</p>}
