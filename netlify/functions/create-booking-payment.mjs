@@ -37,7 +37,8 @@ export async function handler(event) {
       if (existing[0].status === 'link_created' && existing[0].payment_url) return json(200, { paymentUrl: existing[0].payment_url, amount: Number(existing[0].amount), reused: true });
       return json(409, { error: 'يوجد طلب دفع قيد الإنشاء. أعد المحاولة لاحقاً أو راجع سجل العمليات.' });
     }
-    const orderId = 'ZP-' + crypto.randomUUID();
+    const reference = /^#?ZP-[A-Z0-9]{4}-[A-Z0-9]{4}$/.test(booking.booking_code || '') ? booking.booking_code.replace(/^#/, '') : 'ZP';
+    const orderId = reference + '-' + crypto.randomUUID();
     const { data: record, error: insertError } = await db.from('booking_payment_requests').insert({ booking_id: booking.id, order_id: orderId, amount: input.amount, created_by: auth.user.id }).select('id').single();
     if (insertError?.code === '23505') return json(409, { error: 'توجد مطالبة نشطة مسبقاً لهذا الحجز' });
     if (insertError) throw insertError;
