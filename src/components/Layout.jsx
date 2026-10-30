@@ -3,7 +3,6 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { supabase } from '../supabase';
 import ThemeToggle from './ThemeToggle';
 import zLogo from '../assets/z-logo.png';
-import { Instagram, Ghost, MessageCircle } from 'lucide-react'; 
 
 export default function Layout({ children }) {
   const navigate = useNavigate();
