@@ -31,6 +31,7 @@ export default function Dashboard() {
   useEffect(() => { fetchData(); }, []);
 
   const navItems = [
+    { title: 'المركز المالي وعمليات الدفع', path: '/dashboard/payments', icon: <svg className="w-8 h-8 text-brand-accent" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="14" rx="2"/><path strokeLinecap="round" strokeLinejoin="round" d="M2 10h20M6 15h4"/></svg> },
     { 
       title: 'سجل الحجوزات', 
       path: '/dashboard/bookings', 
