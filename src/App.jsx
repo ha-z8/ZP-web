@@ -16,6 +16,7 @@ import Dashboard from './pages/Dashboard';
 import MessagesPage from './pages/MessagesPage';
 import PackagesPage from './pages/PackagesPage';
 import BookingsPage from './pages/BookingsPage';
+import PaymentOperationsPage from './pages/PaymentOperationsPage';
 import CalendarPage from './pages/CalendarPage';
 import UsersPage from './pages/UsersPage';
 import AlbumPage from './pages/AlbumPage';
@@ -39,6 +40,7 @@ export default function App() {
         <Route path="/dashboard/messages" element={<ProtectedRoute><MessagesPage /></ProtectedRoute>} />
         <Route path="/dashboard/packages" element={<ProtectedRoute><PackagesPage /></ProtectedRoute>} />
         <Route path="/dashboard/bookings" element={<ProtectedRoute><BookingsPage /></ProtectedRoute>} />
+        <Route path="/dashboard/payments" element={<ProtectedRoute><PaymentOperationsPage /></ProtectedRoute>} />
         <Route path="/dashboard/users" element={<ProtectedRoute><UsersPage /></ProtectedRoute>} />
         <Route path="/dashboard/album" element={<ProtectedRoute><AlbumPage /></ProtectedRoute>} />
         <Route path="/dashboard/calendar" element={<ProtectedRoute><CalendarPage /></ProtectedRoute>} />
