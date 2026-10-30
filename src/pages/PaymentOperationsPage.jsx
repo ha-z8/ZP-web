@@ -86,6 +86,7 @@ export default function PaymentOperationsPage(){
    showSuccess(body.message);setSelected(null);await load();
   }catch(err){showError(err.message)}finally{setBusy(null)}
  };
+ const visibleTotal=filtered.reduce((total,p)=>total+Number(p.amount||0),0);
  const exportCsv=()=>{
   const header=['رقم الحجز','رقم الدفع','العميل','المبلغ','العملة','الحالة','مخفي','تاريخ الإنشاء','تاريخ السداد','رقم المعاملة'];
   const content=[header,...filtered.map(p=>[p.booking?.booking_code,p.order_id,p.booking?.customer_name,p.amount,p.currency,p.status,p.hidden_at?'نعم':'لا',p.created_at,p.paid_at,p.transaction_id])].map(r=>r.map(csvEscape).join(',')).join('\r\n');
