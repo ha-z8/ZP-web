@@ -34,7 +34,7 @@ export async function handler(event) {
     const { data: record, error: insertError } = await db.from('booking_payment_requests').insert({ booking_id: booking.id, order_id: orderId, amount: input.amount, created_by: auth.user.id }).select('id').single();
     if (insertError?.code === '23505') return json(409, { error: 'توجد مطالبة نشطة مسبقاً لهذا الحجز' });
     if (insertError) throw insertError;
-    const baseUrl = process.env.URL.replace(/\/$/, '');
+    const baseUrl = (process.env.SITE_URL || process.env.URL).replace(/\/$/, '');
     const gateway = process.env.EDFAPAY_BASE_URL || 'https://app-api.edfapay.com';
     const response = await fetch(gateway.replace(/\/$/, '') + '/api/v1/payment-gateway/initiate', {
       method: 'POST',
