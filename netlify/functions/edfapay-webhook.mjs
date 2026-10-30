@@ -40,6 +40,26 @@ export async function handler(event) {
       // Pending/redirect and failures must not overwrite a completed payment.
       return reply(200, 'No successful payment');
     }
+    // Independently confirm the transaction with EdfaPay before altering financial records.
+    if (!process.env.EDFAPAY_API_KEY) return reply(503, 'Verification key not configured');
+    const gateway = (process.env.EDFAPAY_BASE_URL || 'https://app-api.edfapay.com').replace(/\\/$/, '');
+    const verificationUrl = gateway + '/api/v1/transactions/filterTransaction?id=' + encodeURIComponent(tx);
+    const verification = await fetch(verificationUrl, {
+      headers: { 'X-API-KEY': process.env.EDFAPAY_API_KEY, Accept: 'application/json' }
+    });
+    if (!verification.ok) return reply(503, 'Gateway verification unavailable');
+    const verificationBody = await verification.json();
+    const transactions = verificationBody?.data?.content;
+    const confirmed = Array.isArray(transactions) && transactions.find(item =>
+      item.transactionId === tx &&
+      item.orderId === orderId &&
+      Math.round(Number(item.amount) * 100) === Math.round(Number(payment.amount) * 100) &&
+      ['682','SAR'].includes(String(item.currencyCode || item.currency).toUpperCase()) &&
+      String(item.transactionType).toUpperCase() === 'PURCHASE' &&
+      ['APPROVED','SUCCESS'].includes(String(item.paymentStatus).toUpperCase()) &&
+      ['SUCCESS','APPROVED','COMPLETED'].includes(String(item.transactionStatus).toUpperCase())
+    );
+    if (!confirmed) return reply(422, 'Transaction not independently confirmed');
     const { data: matched, error: updateError } = await db.from('booking_payment_requests')
       .update({ status: 'paid', transaction_id: tx, paid_at: new Date().toISOString(), updated_at: new Date().toISOString() })
       .eq('id', payment.id).neq('status', 'paid').select('id,booking_id');
