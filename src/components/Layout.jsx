@@ -189,13 +189,13 @@ export default function Layout({ children }) {
               <h4 className="text-brand-text font-bold text-sm mb-4">حسابـات التواصـل الاجتماعـي</h4>
               <div className="flex gap-4 justify-start">
                 <a href="https://www.instagram.com/zobaidh_photographer/" aria-label="إنستغرام" title="إنستغرام" target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-lg bg-brand-main border border-brand flex items-center justify-center hover:border-brand-accent transition-all">
-                  <svg className="w-5 h-5 text-brand-main" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/></svg>
+                  <img src="/icons/instagram.svg" className="w-5 h-5 dark:invert" alt="" aria-hidden="true" />
                 </a>
                 <a href="https://www.snapchat.com/@zobaidh_photo" aria-label="سناب شات" title="سناب شات" target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-lg bg-brand-main border border-brand flex items-center justify-center hover:border-brand-accent transition-all">
-                  <svg className="w-5 h-5 text-brand-main" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M12 2c-4 0-7 3-7 7v3c0 1-.6 1.9-1.7 2.5-.5.3-.4 1 .2 1.2 1 .3 2 .5 3 .6.4 1 1.2 2 2.2 2.5 1-.6 2.1-.8 3.3-.8s2.3.2 3.3.8c1-.5 1.8-1.5 2.2-2.5 1-.1 2-.3 3-.6.6-.2.7-.9.2-1.2C19.6 13.9 19 13 19 12V9c0-4-3-7-7-7Z"/><circle cx="9.5" cy="10" r=".8" fill="currentColor" stroke="none"/><circle cx="14.5" cy="10" r=".8" fill="currentColor" stroke="none"/></svg>
+                  <img src="/icons/snapchat.svg" className="w-5 h-5 dark:invert" alt="" aria-hidden="true" />
                 </a>
                 <a href="https://wa.me/966554491860" aria-label="واتساب" title="واتساب" target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-lg bg-brand-main border border-brand flex items-center justify-center hover:border-brand-accent transition-all">
-                  <svg className="w-5 h-5 text-brand-main" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M20 11.5a8 8 0 0 1-11.8 7L3 20l1.5-5.2A8 8 0 1 1 20 11.5Z"/><path d="M9 8.5c.5 2.5 2 4.2 4.8 5.5l1.5-1.2 1.5 1.2c-.4 1.7-1.6 2.1-3 1.7-3.4-.9-5.7-3.2-6.3-6.3-.3-1.5.3-2.5 1.5-3l1 1.8Z"/></svg>
+                  <img src="/icons/whatsapp.svg" className="w-5 h-5 dark:invert" alt="" aria-hidden="true" />
                 </a>
               </div>
             </div>

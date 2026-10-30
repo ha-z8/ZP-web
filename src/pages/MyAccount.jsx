@@ -109,11 +109,29 @@ export default function MyAccount() {
                       </div>
                       <span className={`px-4 py-2 rounded-xl text-xs font-bold border ${getStatusStyle(b.status)}`}>{b.status}</span>
                     </div>
+                    {(() => {
+                      const orderPayments = payments.filter(p => p.booking_id === b.id);
+                      const paidCents = orderPayments.filter(p => p.status === 'paid').reduce((total, p) => total + Math.round(Number(p.amount) * 100), 0);
+                      const priceCents = Math.max(0, Math.round(Number(b.package_price || 0) * 100));
+                      const remainingCents = Math.max(0, priceCents - paidCents);
+                      return <div className="mt-5 bg-brand-main border border-brand rounded-xl p-4 space-y-2">
+                        <h5 className="font-black text-brand-text">الملخص المالي للحجز</h5>
+                        <div className="grid grid-cols-3 gap-2 text-center text-xs">
+                          <div><p className="text-brand-muted">الإجمالي</p><strong>{(priceCents / 100).toFixed(2)} ر.س</strong></div>
+                          <div><p className="text-brand-muted">المدفوع المؤكد</p><strong>{(paidCents / 100).toFixed(2)} ر.س</strong></div>
+                          <div><p className="text-brand-muted">المتبقي</p><strong>{(remainingCents / 100).toFixed(2)} ر.س</strong></div>
+                        </div>
+                        <div className="h-2 w-full bg-brand-card rounded-full overflow-hidden" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow={priceCents ? Math.min(100,Math.round(paidCents/priceCents*100)):0}>
+                          <div className="h-full bg-[var(--brand-accent)] rounded-full transition-all" style={{width:(priceCents ? Math.min(100, Math.round(paidCents / priceCents * 100)) : 0)+'%'}}/>
+                        </div>
+                        <p className="text-xs text-brand-muted">قد يظهر العربون أو الدفعات الجزئية هنا؛ ولا تعتبر الدفعة مدفوعة إلا بعد التحقق من البوابة.</p>
+                      </div>;
+                    })()}
                     {payments.filter(p => p.booking_id === b.id).map(p => (
                       <div key={p.id} className="bg-brand-main border border-brand p-4 rounded-xl my-4">
                         <p className="font-bold text-brand-text">طلب دفع: {Number(p.amount).toFixed(2)} ريال سعودي</p>
                         <p className="text-sm text-brand-muted my-2">{p.status === 'paid' ? 'تم توثيق السداد' : 'لم يتم تأكيد السداد بعد'}</p>
-                        {p.payment_url && p.status !== 'paid' && <a href={p.payment_url} target="_blank" rel="noopener noreferrer" className="inline-block bg-brand-btn px-5 py-2 rounded-lg font-bold">الدفع الآن عبر EdfaPay</a>}
+                        {p.payment_url && p.status === 'link_created' && <a href={p.payment_url} target="_blank" rel="noopener noreferrer" className="inline-block bg-brand-btn px-5 py-2 rounded-lg font-bold">الدفع الآن عبر EdfaPay</a>}
                       </div>
                     ))}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 bg-brand-main p-6 rounded-xl border border-brand">

@@ -1,7 +1,7 @@
 import { createClient } from '@supabase/supabase-js';
 
 const json = (statusCode, body) => ({ statusCode, headers: { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store' }, body: JSON.stringify(body) });
-const validAmount = (value) => typeof value === 'number' && Number.isFinite(value) && value >= 1 && value <= 1000000 && Math.round(value * 100) === value * 100;
+const validAmount = (value) => typeof value === 'number' && Number.isFinite(value) && value >= 1 && value <= 1000000 && Math.abs(Math.round(value * 100) - value * 100) < 0.000001;
 
 export async function handler(event) {
   if (event.httpMethod !== 'POST') return json(405, { error: 'Method not allowed' });
@@ -18,12 +18,19 @@ export async function handler(event) {
     if (roleError || profile?.role !== 'admin') return json(403, { error: 'هذه العملية للمشرف فقط' });
     const input = JSON.parse(event.body || '{}');
     if (typeof input.bookingId !== 'string' || !validAmount(input.amount)) return json(400, { error: 'يرجى إدخال مبلغ صحيح بالريال السعودي' });
-    const { data: booking, error: bookingError } = await db.from('bookings').select('id,booking_code,customer_name,customer_phone,customer_email,status').eq('id', input.bookingId).single();
+    const { data: booking, error: bookingError } = await db.from('bookings').select('id,booking_code,customer_name,customer_phone,customer_email,status,package_price').eq('id', input.bookingId).single();
     if (bookingError || !booking) return json(404, { error: 'الحجز غير موجود' });
     if (booking.status === 'ملغي') return json(409, { error: 'لا يمكن إنشاء مطالبة لحجز ملغي' });
     if (!booking.customer_name || !booking.customer_phone || !booking.customer_email) return json(400, { error: 'يلزم اسم العميل ورقم الجوال والبريد لإنشاء رابط الدفع' });
-    const { data: old } = await db.from('booking_payment_requests').select('id').eq('booking_id', booking.id).eq('status', 'paid').limit(1);
-    if (old?.length) return json(409, { error: 'هناك دفعة مسددة لهذا الحجز؛ تحقق قبل إصدار مطالبة جديدة' });
+    const totalCents = Math.round(Number(booking.package_price) * 100);
+    if (!Number.isSafeInteger(totalCents) || totalCents <= 0) return json(422, { error: 'سعر الحجز غير صالح' });
+    const { data: paid, error: paidError } = await db.from('booking_payment_requests').select('amount').eq('booking_id', booking.id).eq('status','paid');
+    if (paidError) throw paidError;
+    const paidCents = (paid || []).reduce((sum, item) => sum + Math.round(Number(item.amount) * 100), 0);
+    const remainingCents = totalCents - paidCents;
+    if (remainingCents <= 0) return json(409, { error: 'تم سداد كامل قيمة الحجز' });
+    const requestedCents = Math.round(input.amount * 100);
+    if (requestedCents > remainingCents) return json(422, { error: 'المبلغ أكبر من المتبقي على الحجز' });
     const { data: existing, error: existingError } = await db.from('booking_payment_requests').select('payment_url,amount,status').eq('booking_id', booking.id).in('status',['pending','link_created']).limit(1);
     if (existingError) throw existingError;
     if (existing?.length) {
@@ -56,7 +63,7 @@ export async function handler(event) {
     const { error: updateError } = await db.from('booking_payment_requests').update({ payment_url: paymentUrl, status: 'link_created' }).eq('id', record.id);
     if (updateError) throw updateError;
     await db.from('bookings').update({ status: 'انتظار الدفع' }).eq('id', booking.id);
-    return json(200, { paymentUrl, amount: input.amount, orderId });
+    return json(200, { paymentUrl, amount: input.amount, orderId, remaining: remainingCents / 100 });
   } catch (error) {
     console.error('payment-link error', error?.message);
     return json(500, { error: 'تعذر إتمام العملية. تحقق من سجل الخادم وإعدادات قاعدة البيانات.' });

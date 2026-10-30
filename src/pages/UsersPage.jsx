@@ -3,9 +3,11 @@ import Swal from 'sweetalert2';
 import { supabase } from '../supabase';
 import { showSuccess, showError, confirmAction } from '../utils/alerts';
 import AdminLayout from '../components/AdminLayout';
+import PaymentRequestModal from '../components/PaymentRequestModal';
 
 export default function UsersPage() {
   const [users, setUsers] = useState([]);
+  const [paymentUser,setPaymentUser] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
   
   // حالات مودل تعديل البيانات
@@ -179,7 +181,8 @@ export default function UsersPage() {
                     </select>
                   </td>
                   <td className="p-3">
-                    <div className="flex items-center justify-center gap-1.5">
+                    <div className="flex items-center justify-center gap-1.5 flex-wrap">
+                      {u.role !== 'admin' && <button onClick={() => setPaymentUser(u)} className="bg-brand-btn px-2.5 py-2 rounded-lg border border-brand text-xs font-bold" title="طلبات الدفع">إرسال دفع</button>}
                       <button onClick={() => { setEditingUser(u); setIsEditUserModalOpen(true); }} className="bg-brand-main hover:bg-brand-card-hover p-2 rounded-lg border border-brand shadow-sm transition-all" title="تعديل">
                         <svg className="w-4 h-4 text-brand-text" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
                       </button>
@@ -201,6 +204,7 @@ export default function UsersPage() {
         </div>
       </div>
 
+      {paymentUser && <PaymentRequestModal customer={paymentUser} onClose={() => setPaymentUser(null)} />}
       {/* مودل تعديل بيانات المستخدم */}
       {isEditUserModalOpen && editingUser && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-md p-4">

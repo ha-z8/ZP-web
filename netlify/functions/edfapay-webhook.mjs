@@ -65,8 +65,16 @@ export async function handler(event) {
       .eq('id', payment.id).neq('status', 'paid').select('id,booking_id');
     if (updateError) throw updateError;
     if (matched?.length) {
-      const { error: bookingError } = await db.from('bookings').update({ status: 'مؤكد' }).eq('id', payment.booking_id).eq('status','انتظار الدفع');
-      if (bookingError) throw bookingError;
+      const { data: booking, error: bookingReadError } = await db.from('bookings').select('package_price').eq('id', payment.booking_id).single();
+      if (bookingReadError) throw bookingReadError;
+      const { data: settled, error: settledError } = await db.from('booking_payment_requests').select('amount').eq('booking_id', payment.booking_id).eq('status', 'paid');
+      if (settledError) throw settledError;
+      const paidCents = (settled || []).reduce((sum, item) => sum + Math.round(Number(item.amount) * 100), 0);
+      const priceCents = Math.round(Number(booking.package_price) * 100);
+      if (priceCents > 0 && paidCents >= priceCents) {
+        const { error: bookingError } = await db.from('bookings').update({ status: 'مؤكد' }).eq('id', payment.booking_id).eq('status','انتظار الدفع');
+        if (bookingError) throw bookingError;
+      }
     }
     return reply(200, 'Processed');
   } catch (error) {
