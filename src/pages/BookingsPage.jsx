@@ -2,9 +2,11 @@ import React, { useState, useEffect } from 'react';
 import { supabase } from '../supabase';
 import { showSuccess, showError, confirmAction } from '../utils/alerts';
 import AdminLayout from '../components/AdminLayout';
+import PaymentRequestModal from '../components/PaymentRequestModal';
 
 export default function BookingsPage() {
   const [bookings, setBookings] = useState([]);
+  const [paymentCustomer, setPaymentCustomer] = useState(null);
   const [paymentRequests, setPaymentRequests] = useState([]);
   const [paymentAmounts, setPaymentAmounts] = useState({});
   const [creatingPaymentFor, setCreatingPaymentFor] = useState(null);
@@ -270,7 +272,7 @@ export default function BookingsPage() {
                         </div>
 
                         <div className="mt-5 p-4 bg-brand-main rounded-xl border border-brand space-y-3">
-                          <h4 className="font-bold text-brand-text text-sm">طلب دفع عبر EdfaPay</h4>
+                          <div className="flex items-center justify-between gap-3 flex-wrap"><h4 className="font-bold text-brand-text text-sm">طلبات الدفع عبر EdfaPay</h4>{b.user_id && <button onClick={() => setPaymentCustomer({id:b.user_id,full_name:b.customer_name,phone:b.customer_phone})} className="bg-brand-btn rounded-lg px-3 py-2 text-xs font-bold">إدارة العربون والدفعات والمشاركة</button>}</div>
                           <p className="text-xs text-brand-muted">حدد المبلغ المستحق. يظهر رابط الدفع في حساب العميل بعد إنشائه ويمكن نسخه لإرساله خارج الموقع.</p>
                           <div className="flex flex-wrap gap-2 items-center">
                             <input type="number" min="1" max="1000000" step="0.01" value={paymentAmounts[b.id] ?? ''} onChange={e => setPaymentAmounts(a => ({...a, [b.id]: e.target.value}))} placeholder="المبلغ بالريال" aria-label="المبلغ بالريال السعودي" className="bg-brand-card border border-brand rounded-lg p-2 text-brand-text w-44 text-sm" />
@@ -302,6 +304,7 @@ export default function BookingsPage() {
         )}
       </div>
 
+      {paymentCustomer && <PaymentRequestModal customer={paymentCustomer} onClose={() => {setPaymentCustomer(null);fetchData();}} />}
       {/* نافذة (Modal) تعديل بيانات الحجز بالكامل */}
       {isEditModalOpen && editingBooking && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-md p-4">
