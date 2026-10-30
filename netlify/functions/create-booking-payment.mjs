@@ -24,8 +24,15 @@ export async function handler(event) {
     if (!booking.customer_name || !booking.customer_phone || !booking.customer_email) return json(400, { error: 'يلزم اسم العميل ورقم الجوال والبريد لإنشاء رابط الدفع' });
     const { data: old } = await db.from('booking_payment_requests').select('id').eq('booking_id', booking.id).eq('status', 'paid').limit(1);
     if (old?.length) return json(409, { error: 'هناك دفعة مسددة لهذا الحجز؛ تحقق قبل إصدار مطالبة جديدة' });
+    const { data: existing, error: existingError } = await db.from('booking_payment_requests').select('payment_url,amount,status').eq('booking_id', booking.id).in('status',['pending','link_created']).limit(1);
+    if (existingError) throw existingError;
+    if (existing?.length) {
+      if (existing[0].status === 'link_created' && existing[0].payment_url) return json(200, { paymentUrl: existing[0].payment_url, amount: Number(existing[0].amount), reused: true });
+      return json(409, { error: 'يوجد طلب دفع قيد الإنشاء. أعد المحاولة لاحقاً أو راجع سجل العمليات.' });
+    }
     const orderId = 'ZP-' + crypto.randomUUID();
     const { data: record, error: insertError } = await db.from('booking_payment_requests').insert({ booking_id: booking.id, order_id: orderId, amount: input.amount, created_by: auth.user.id }).select('id').single();
+    if (insertError?.code === '23505') return json(409, { error: 'توجد مطالبة نشطة مسبقاً لهذا الحجز' });
     if (insertError) throw insertError;
     const baseUrl = process.env.URL.replace(/\/$/, '');
     const gateway = process.env.EDFAPAY_BASE_URL || 'https://app-api.edfapay.com';
