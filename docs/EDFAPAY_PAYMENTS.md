@@ -40,7 +40,7 @@
 ## سلوك النسخة الحالية
 - إنشاء روابط Hosted Checkout والتأكد من صلاحية المشرف.
 - يعاد استخدام رابط مطالبة نشطة عند محاولة إصدار مطالبة ثانية.
-- Webhook يتحقق من توقيع `X-EdfaPay-Signature` باستخدام HMAC-SHA256 على الطلب الخام.
+- Webhook يتحقق من توقيع `X-EdfaPay-Signature` باستخدام HMAC-SHA256 على الطلب الخام، ثم يستعلم عن `transactionId` عبر EdfaPay Transaction Status API ويتحقق من معرّف الطلب والمبلغ والعملة ونوع المعاملة والحالة قبل اعتماد السداد.
 - عند وصول `Purchase` ناجح موثق وبالمبلغ والعملة المطابقين، تُسجل العملية مدفوعة ويمكن تأكيد الحجز إذا كان ينتظر الدفع.
 - لا يعتمد رجوع المتصفح من EdfaPay دليلا على الدفع.
 - لم تُجرَ معاملة EdfaPay حقيقية من خلال هذه التعديلات، ولا يوجد اختبار End-to-End موثق بعد.
@@ -51,3 +51,13 @@
 - https://docs.edfapay.com/docs/webhook-information
 - https://docs.edfapay.com/docs/webhook-validation
 - https://docs.edfapay.com/docs/webhook-operation-types
+
+## نتائج التحقق من التوثيق الرسمي (2026-10-31)
+- Hosted Checkout: POST `https://app-api.edfapay.com/api/v1/payment-gateway/initiate` مع `X-API-KEY`، ورابط الدفع في `data.redirectUrl`.
+- Webhook: `X-EdfaPay-Signature` = HMAC-SHA256(secret, raw body) بصيغة hex؛ انتبه لتطابق النص السري والبايتات كما وردت.
+- عند إشعار Purchase/Approved، تحقق كذلك من GET `/api/v1/transactions/filterTransaction?id=<transactionId>`.
+- لا تعتمد Authorization / Pending / Redirect كدفعة مكتملة. يجب التعامل مع التأخير والتكرار في إشعارات webhook.
+- **قبل الإنتاج:** التحقق من قيم transactionStatus وpaymentStatus الفعلية بحساب EdfaPay التجريبي؛ بوابة التحقق ترفض السداد إذا لم تطابق القيم المتوقعة. الاختبارات الحية لم تُجرَ.
+- لم يُتحقق من صحة مخطط Supabase الإنتاجي، ولم يُشغل بناء محلي أو طلب دفع تجريبي متصل بحساب تاجر.
+- واجهة EdfaPay العامة تذكر أيضا `dev-api.edfapay.com` للتجربة، بينما Hosted Checkout موثق على `app-api.edfapay.com`؛ تأكد من عنوان Hosted Checkout الخاص ببيئتك مع حساب التاجر ولا تخلط مفاتيح التجربة والإنتاج.
+- راجع: https://docs.edfapay.com/reference/initiate و https://docs.edfapay.com/docs/webhook-validation و https://docs.edfapay.com/reference/transaction-status
